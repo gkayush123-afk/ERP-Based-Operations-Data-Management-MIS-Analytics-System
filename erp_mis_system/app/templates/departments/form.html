@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if department else "Create" }} department{% endblock %}
+{% block content %}
+<section class="auth-section"><div class="auth-card">
+  <a class="small text-decoration-none" href="{{ url_for('departments.index') }}"><i class="bi bi-arrow-left me-1"></i>Departments</a>
+  <h1 class="h3 mt-3">{{ "Edit department" if department else "Create department" }}</h1>
+  <form method="post" data-validated-form novalidate>
+    {{ form.hidden_tag() }}
+    <div class="mb-3">{{ form.name.label(class="form-label fw-semibold") }}{{ form.name(class="form-control", required=true, maxlength="120") }}</div>
+    <div class="form-check mb-4">{{ form.is_active(class="form-check-input") }}{{ form.is_active.label(class="form-check-label") }}</div>
+    <button class="btn btn-primary" type="submit">Save department</button>
+  </form>
+</div></section>
+{% endblock %}

@@ -1,0 +1,141 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+<section class="dashboard-section"><div class="container py-5">
+  <span class="eyebrow">Your workspace</span>
+  <h1 class="h2 mt-2">Welcome, {{ current_user.full_name }}</h1>
+  <p class="text-secondary">You are logged in as <span class="badge text-bg-primary">{{ current_user.role|replace('_', ' ')|title }}</span>.</p>
+
+  <div class="row g-3 mt-3">
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('employees.index') }}"><i class="bi bi-people"></i><span><strong>{{ metrics.total_employees }} active employees</strong><small>In your reporting scope</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.index', attendance_date=today) }}"><i class="bi bi-calendar-check"></i><span><strong>{{ metrics.today_attendance_total }} attendance entries</strong><small>Today · {{ metrics.today_attendance.present }} present</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.index', verification_status='pending') }}"><i class="bi bi-hourglass-split"></i><span><strong>{{ metrics.pending_verifications }} pending verifications</strong><small>Awaiting review in your scope</small></span></a></div>
+    {% if current_user.role in ["admin", "manager"] %}
+      <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('data_quality.index') }}"><i class="bi bi-clipboard2-pulse"></i><span><strong>{{ data_quality_count or 0 }} data issues</strong><small>Detected today</small></span></a></div>
+    {% endif %}
+  </div>
+
+  {% set monthly_sales = metrics.get("monthly_sales") %}
+  {% set purchase_amount = metrics.get("purchase_amount") %}
+  {% set completed_tasks = metrics.get("completed_tasks") %}
+  <div class="row g-3 mt-3">
+    <div class="col-sm-6 col-xl-3"><div class="dashboard-card"><i class="bi bi-cash-coin"></i><span><strong>{% if monthly_sales is not none %}₹ {{ "{:,.0f}".format(monthly_sales|int) }}{% else %}Not available{% endif %}</strong><small>Monthly sales</small></span></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="dashboard-card"><i class="bi bi-bag-check"></i><span><strong>{% if purchase_amount is not none %}₹ {{ "{:,.0f}".format(purchase_amount|int) }}{% else %}Not available{% endif %}</strong><small>Purchase amount</small></span></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="dashboard-card"><i class="bi bi-list-task"></i><span><strong>{{ metrics.pending_verifications }} pending tasks</strong><small>Actions needed</small></span></div></div>
+    <div class="col-sm-6 col-xl-3"><div class="dashboard-card"><i class="bi bi-check2-circle"></i><span><strong>{% if completed_tasks is not none %}{{ completed_tasks|int }}{% else %}Not available{% endif %} completed tasks</strong><small>Work completed</small></span></div></div>
+  </div>
+
+  <div class="row g-4 mt-1">
+    <div class="col-lg-6"><div class="info-panel h-100"><h2 class="h5 mb-3">Department-wise employees</h2>
+      {% if metrics.department_performance %}
+        <div class="d-grid gap-3">
+          {% for item in metrics.department_performance %}
+            <div>
+              <div class="d-flex justify-content-between small text-secondary mb-1"><span>{{ item.name }}</span><span>{{ item.employees }} employees</span></div>
+              <div class="progress" style="height: 10px;">
+                <div class="progress-bar bg-primary" role="progressbar" style="width: {{ item.percent }}%" aria-valuenow="{{ item.percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-secondary mb-0">No department data available.</p>
+      {% endif %}
+    </div></div>
+    <div class="col-lg-6"><div class="info-panel h-100"><h2 class="h5 mb-3">Monthly / Weekly trends</h2><div style="height: 300px"><canvas id="monthly-chart" aria-label="Monthly attendance trend" role="img"></canvas></div></div></div>
+  </div>
+
+  <div class="row g-4 mt-1">
+    <div class="col-lg-6"><div class="info-panel h-100"><h2 class="h5 mb-3">Today's attendance by department</h2>
+      {% if metrics.department_labels %}<div style="height: 300px"><canvas id="department-chart" aria-label="Today's attendance by department" role="img"></canvas></div>{% else %}<p class="text-secondary mb-0">No attendance recorded today.</p>{% endif %}
+    </div></div>
+    <div class="col-lg-6"><div class="info-panel h-100"><h2 class="h5 mb-3">Department-wise performance</h2>
+      {% if metrics.department_performance %}
+        <div class="d-grid gap-3">
+          {% for item in metrics.department_performance %}
+            <div>
+              <div class="d-flex justify-content-between small text-secondary mb-1"><span>{{ item.name }}</span><span>{{ item.percent }}%</span></div>
+              <div class="progress" style="height: 10px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ item.percent }}%" aria-valuenow="{{ item.percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-secondary mb-0">No performance data available.</p>
+      {% endif %}
+    </div></div>
+  </div>
+
+  <div class="row g-3 mt-3">
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('employees.index') }}"><i class="bi bi-person-vcard"></i><span><strong>Employees</strong><small>Browse employee records</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.index') }}"><i class="bi bi-calendar2-week"></i><span><strong>Attendance</strong><small>View attendance records</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.create') }}"><i class="bi bi-calendar-plus"></i><span><strong>Daily entry</strong><small>Submit attendance</small></span></a></div>
+    {% if current_user.role in ["admin", "manager"] %}
+      <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('reports.index') }}"><i class="bi bi-bar-chart-line"></i><span><strong>MIS reports</strong><small>Analyze and export attendance</small></span></a></div>
+    {% endif %}
+    {% if current_user.role == "admin" %}
+      <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('users.index') }}"><i class="bi bi-person-gear"></i><span><strong>User management</strong><small>Manage users and approvals</small></span></a></div>
+      <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('users.audit_logs') }}"><i class="bi bi-journal-text"></i><span><strong>Audit logs</strong><small>Review system activity</small></span></a></div>
+    {% endif %}
+    {% if current_user.role == "data_entry" %}
+      <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('main.department_data') }}"><i class="bi bi-diagram-3"></i><span><strong>Department data</strong><small>View your department workspace</small></span></a></div>
+    {% endif %}
+  </div>
+
+  {% if current_user.role == "admin" %}
+  <div class="d-flex align-items-center justify-content-between mt-5 mb-3">
+    <div><h2 class="h4 mb-1">Registration approvals</h2><p class="text-secondary mb-0">Review new account requests.</p></div>
+    <span class="badge rounded-pill text-bg-light border">{{ pending_users|length }} pending</span>
+  </div>
+  {% if pending_users %}
+  <div class="table-responsive bg-white rounded-4 shadow-sm"><table class="table align-middle mb-0">
+    <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>Department</th><th>Requested</th><th class="text-end">Actions</th></tr></thead>
+    <tbody>{% for user in pending_users %}
+      <tr><td>{{ user.full_name }}</td><td>{{ user.username }}</td><td>{{ user.email }}</td><td>{{ user.department.name if user.department else "—" }}</td><td>{{ user.created_at.strftime("%Y-%m-%d") }}</td><td>
+        <div class="d-flex justify-content-end gap-2">
+          <form method="post" action="{{ url_for('auth.decide_registration', user_id=user.id, decision='approve') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-success btn-sm" type="submit">Approve</button></form>
+          <form method="post" action="{{ url_for('auth.decide_registration', user_id=user.id, decision='reject') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-danger btn-sm" type="submit">Reject</button></form>
+        </div>
+      </td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<div class="empty-state"><i class="bi bi-check2-circle"></i><p class="mb-0 mt-2">There are no pending registrations.</p></div>{% endif %}
+  {% endif %}
+</div></section>
+{% endblock %}
+{% block scripts %}
+<script>
+  (() => {
+    const statusNames = {present: "Present", absent: "Absent", leave: "Leave", half_day: "Half-day"};
+    const statusColors = {present: "#198754", absent: "#dc3545", leave: "#0d6efd", half_day: "#ffc107"};
+    const departmentCanvas = document.getElementById("department-chart");
+    if (departmentCanvas) {
+      const departmentSeries = {{ metrics.department_series|tojson }};
+      new Chart(departmentCanvas, {
+        type: "bar",
+        data: {
+          labels: {{ metrics.department_labels|tojson }},
+          datasets: Object.entries(departmentSeries).map(([key, values]) => ({
+            label: statusNames[key], data: values, backgroundColor: statusColors[key]
+          }))
+        },
+        options: {responsive: true, maintainAspectRatio: false, scales: {x: {stacked: true}, y: {stacked: true, beginAtZero: true, ticks: {precision: 0}}}, plugins: {legend: {position: "bottom"}}}
+      });
+    }
+    new Chart(document.getElementById("monthly-chart"), {
+      type: "line",
+      data: {
+        labels: {{ metrics.trend_labels|tojson }},
+        datasets: Object.entries({{ metrics.trend_series|tojson }}).map(([key, values]) => ({
+          label: statusNames[key], data: values, borderColor: statusColors[key], backgroundColor: statusColors[key], tension: 0.25
+        }))
+      },
+      options: {responsive: true, maintainAspectRatio: false, scales: {y: {beginAtZero: true, ticks: {precision: 0}}}, plugins: {legend: {position: "bottom"}}}
+    });
+  })();
+</script>
+{% endblock %}

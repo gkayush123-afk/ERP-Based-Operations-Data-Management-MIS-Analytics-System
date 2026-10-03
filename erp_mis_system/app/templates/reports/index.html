@@ -1,0 +1,149 @@
+{% extends "base.html" %}
+{% block title %}MIS reports{% endblock %}
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+{% endblock %}
+{% block content %}
+{% set report_titles = {"daily": "Daily report", "weekly": "Weekly report", "monthly": "Monthly report", "department": "Department-wise summary"} %}
+<section class="dashboard-section"><div class="container py-5">
+  <div class="mb-4">
+    <span class="eyebrow">Management information system</span>
+    <h1 class="h2 mt-2 mb-1">MIS reports</h1>
+    <p class="text-secondary mb-0">{{ report_titles[filters.type] }} · {{ filters.start_date.isoformat() }} to {{ filters.end_date.isoformat() }}</p>
+  </div>
+
+  <form class="info-panel mb-4" method="get" id="report-filters">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-3">
+        <label class="form-label fw-semibold" for="type">Report</label>
+        <select class="form-select" id="type" name="type">
+          {% for value, label in [("daily", "Daily"), ("weekly", "Weekly"), ("monthly", "Monthly"), ("department", "Department-wise summary")] %}
+            <option value="{{ value }}" {% if filters.type == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-3 period-field" data-for="daily,weekly">
+        <label class="form-label fw-semibold" for="date">Date / date in selected week</label>
+        <input class="form-control" id="date" name="date" type="date" value="{{ filters.period_date.isoformat() }}">
+      </div>
+      <div class="col-md-3 period-field" data-for="monthly">
+        <label class="form-label fw-semibold" for="month">Month</label>
+        <input class="form-control" id="month" name="month" type="month" value="{{ filters.period_month.strftime('%Y-%m') }}">
+      </div>
+      <div class="col-md-3 period-field" data-for="department">
+        <label class="form-label fw-semibold" for="start_date">From</label>
+        <input class="form-control" id="start_date" name="start_date" type="date" value="{{ filters.start_date.isoformat() }}">
+      </div>
+      <div class="col-md-3 period-field" data-for="department">
+        <label class="form-label fw-semibold" for="end_date">To</label>
+        <input class="form-control" id="end_date" name="end_date" type="date" value="{{ filters.end_date.isoformat() }}">
+      </div>
+      {% if current_user.role == "admin" %}
+      <div class="col-md-3">
+        <label class="form-label fw-semibold" for="department_id">Department</label>
+        <select class="form-select" id="department_id" name="department_id">
+          <option value="">All departments</option>
+          {% for department in departments %}
+            <option value="{{ department.id }}" {% if filters.department_id == department.id %}selected{% endif %}>{{ department.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      {% endif %}
+      <div class="col-md-3">
+        <label class="form-label fw-semibold" for="status">Attendance status</label>
+        <select class="form-select" id="status" name="status">
+          <option value="">All statuses</option>
+          {% for value, label in status_labels.items() %}
+            <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-12 d-flex flex-wrap gap-2">
+        <button class="btn btn-primary" type="submit">Run report</button>
+        <a class="btn btn-outline-secondary" href="{{ url_for('reports.index') }}">Reset</a>
+        <a class="btn btn-outline-success ms-md-auto" href="{{ url_for('reports.export', file_format='xlsx', **request.args) }}"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export Excel</a>
+        <a class="btn btn-outline-danger" href="{{ url_for('reports.export', file_format='pdf', **request.args) }}"><i class="bi bi-file-earmark-pdf me-1"></i>Export PDF</a>
+      </div>
+    </div>
+    {% if filters.status %}<p class="small text-secondary mt-3 mb-0">The status filter narrows report counts. Department attendance percentage remains present records divided by expected active-employee days.</p>{% endif %}
+  </form>
+
+  <div class="info-panel mb-4">
+    <h2 class="h5 mb-3">{{ report_titles[filters.type] }} chart</h2>
+    {% if chart.labels %}
+      <div style="height: 340px"><canvas id="mis-report-chart" aria-label="{{ report_titles[filters.type] }} chart" role="img"></canvas></div>
+    {% else %}
+      <div class="empty-state"><i class="bi bi-bar-chart"></i><p class="mb-0 mt-2">No attendance records match these filters.</p></div>
+    {% endif %}
+  </div>
+
+  <div class="info-panel">
+    <h2 class="h5 mb-3">{{ report_titles[filters.type] }} data</h2>
+    <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+      <thead><tr>
+        {% if filters.type == "department" %}
+          <th>Department</th><th class="text-end">Present</th><th class="text-end">Absent</th><th class="text-end">Leave</th><th class="text-end">Half-day</th><th class="text-end">Active employees</th><th class="text-end">Attendance %</th>
+        {% else %}
+          <th>Date</th><th>Department</th><th class="text-end">Present</th><th class="text-end">Absent</th><th class="text-end">Leave</th><th class="text-end">Half-day</th>
+        {% endif %}
+      </tr></thead>
+      <tbody>
+      {% for row in rows %}
+        <tr>
+          {% if filters.type == "department" %}
+            <td>{{ row.department }}</td><td class="text-end">{{ row.present }}</td><td class="text-end">{{ row.absent }}</td><td class="text-end">{{ row.leave }}</td><td class="text-end">{{ row.half_day }}</td><td class="text-end">{{ row.active_employees }}</td><td class="text-end">{{ "%.2f"|format(row.attendance_percentage) }}%</td>
+          {% else %}
+            <td>{{ row.date }}</td><td>{{ row.department }}</td><td class="text-end">{{ row.present }}</td><td class="text-end">{{ row.absent }}</td><td class="text-end">{{ row.leave }}</td><td class="text-end">{{ row.half_day }}</td>
+          {% endif %}
+        </tr>
+      {% else %}
+        <tr><td colspan="7" class="text-center text-secondary py-4">No matching data.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    {% if filters.type == "department" %}<p class="small text-secondary mt-3 mb-0">Attendance percentage = present records ÷ (active employees with a joining date on or before the period end × calendar days in the selected period).{% if filters.status %} Percentage is calculated across all attendance statuses, regardless of the status-count filter.{% endif %}</p>{% endif %}
+  </div>
+</div></section>
+{% endblock %}
+{% block scripts %}
+<script>
+  (() => {
+    const typeSelect = document.getElementById("type");
+    const syncPeriodFields = () => {
+      document.querySelectorAll(".period-field").forEach((container) => {
+        const visible = container.dataset.for.split(",").includes(typeSelect.value);
+        container.hidden = !visible;
+        container.querySelectorAll("input").forEach((input) => { input.disabled = !visible; });
+      });
+    };
+    typeSelect.addEventListener("change", syncPeriodFields);
+    syncPeriodFields();
+    const canvas = document.getElementById("mis-report-chart");
+    if (!canvas) return;
+    const labels = {{ chart.labels|tojson }};
+    const series = {{ chart.series|tojson }};
+    const names = {present: "Present", absent: "Absent", leave: "Leave", half_day: "Half-day"};
+    const colors = {present: "#198754", absent: "#dc3545", leave: "#0d6efd", half_day: "#ffc107"};
+    const isTimeline = {{ (filters.type in ["weekly", "monthly"])|tojson }};
+    const datasets = Object.entries(series).map(([key, values]) => ({
+      label: names[key],
+      data: values,
+      backgroundColor: colors[key],
+      borderColor: colors[key],
+      borderWidth: 2,
+      ...(isTimeline ? {tension: 0.25, fill: false} : {})
+    }));
+    new Chart(canvas, {
+      type: isTimeline ? "line" : "bar",
+      data: {labels, datasets},
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {mode: "index", intersect: false},
+        scales: {y: {beginAtZero: true, ticks: {precision: 0}}},
+        plugins: {legend: {position: "bottom"}}
+      }
+    });
+  })();
+</script>
+{% endblock %}

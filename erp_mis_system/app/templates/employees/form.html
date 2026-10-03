@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}{{ "Edit" if employee else "Add" }} employee{% endblock %}
+{% block content %}
+<section class="auth-section auth-section-wide"><div class="auth-card">
+  <a class="small text-decoration-none" href="{{ url_for('employees.index') }}"><i class="bi bi-arrow-left me-1"></i>Employees</a>
+  <h1 class="h3 mt-3">{{ "Edit employee" if employee else "Add employee" }}</h1>
+  <form method="post" data-employee-form data-validated-form novalidate>
+    {{ form.hidden_tag() }}
+    <div class="row g-3">
+      <div class="col-md-6">{{ form.employee_code.label(class="form-label fw-semibold") }}{{ form.employee_code(class="form-control", required=true, maxlength="40") }}</div>
+      <div class="col-md-6">{{ form.full_name.label(class="form-label fw-semibold") }}{{ form.full_name(class="form-control", required=true, maxlength="160") }}</div>
+      <div class="col-md-6">{{ form.email.label(class="form-label fw-semibold") }}{{ form.email(class="form-control", type="email", required=true, maxlength="254") }}</div>
+      <div class="col-md-6">{{ form.phone.label(class="form-label fw-semibold") }}{{ form.phone(class="form-control", type="tel", maxlength="30", placeholder="+1 555 010 1234") }}</div>
+      <div class="col-md-6">{{ form.designation.label(class="form-label fw-semibold") }}{{ form.designation(class="form-control", required=true, maxlength="120") }}</div>
+      <div class="col-md-6">{{ form.department_id.label(class="form-label fw-semibold") }}{{ form.department_id(class="form-select", required=true, disabled=current_user.role == "data_entry") }}
+        {% if current_user.role == "data_entry" %}<input type="hidden" name="department_id" value="{{ current_user.department_id }}">{% endif %}
+      </div>
+      <div class="col-md-6">{{ form.joining_date.label(class="form-label fw-semibold") }}{{ form.joining_date(class="form-control", type="date", required=true) }}</div>
+      <div class="col-md-6">{{ form.status.label(class="form-label fw-semibold") }}{{ form.status(class="form-select", required=true) }}</div>
+    </div>
+    <button class="btn btn-primary mt-4" type="submit">Save employee</button>
+  </form>
+</div></section>
+{% endblock %}

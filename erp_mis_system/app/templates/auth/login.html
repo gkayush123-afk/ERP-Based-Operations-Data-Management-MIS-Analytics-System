@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Log in{% endblock %}
+{% block content %}
+<section class="auth-section">
+  <div class="auth-card">
+    <div class="text-center mb-4">
+      <span class="auth-mark"><i class="bi bi-person-lock"></i></span>
+      <h1 class="h3 mt-3">Welcome back</h1>
+      <p class="text-secondary">Log in to your ERP MIS account.</p>
+    </div>
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="mb-3">
+        {{ form.username.label(class="form-label fw-semibold") }}
+        {{ form.username(class="form-control form-control-lg", autocomplete="username", autofocus=true) }}
+      </div>
+      <div class="mb-3">
+        {{ form.password.label(class="form-label fw-semibold") }}
+        {{ form.password(class="form-control form-control-lg", autocomplete="current-password") }}
+      </div>
+      <div class="form-check mb-4">{{ form.remember(class="form-check-input") }}{{ form.remember.label(class="form-check-label") }}</div>
+      {{ form.submit(class="btn btn-primary btn-lg w-100") }}
+    </form>
+    <p class="text-center text-secondary mt-4 mb-0">Don't have an account? <a href="{{ url_for('auth.register') }}">Register</a></p>
+  </div>
+</section>
+{% endblock %}

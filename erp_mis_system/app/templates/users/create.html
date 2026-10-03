@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Create user{% endblock %}
+{% block content %}
+<section class="auth-section auth-section-wide">
+  <div class="auth-card">
+    <a class="small text-decoration-none" href="{{ url_for('users.index') }}"><i class="bi bi-arrow-left me-1"></i>User management</a>
+    <h1 class="h3 mt-3">Create user</h1>
+    <p class="text-secondary">New accounts are active and must change the temporary password at first login.</p>
+    {% if not departments %}<div class="alert alert-warning">Create an active department before creating a user.</div>{% endif %}
+    <form method="post" novalidate>
+      {{ form.hidden_tag() }}
+      <div class="row g-3">
+        <div class="col-md-6">{{ form.username.label(class="form-label fw-semibold") }}{{ form.username(class="form-control", required=true) }}</div>
+        <div class="col-md-6">{{ form.full_name.label(class="form-label fw-semibold") }}{{ form.full_name(class="form-control", required=true) }}</div>
+        <div class="col-12">{{ form.email.label(class="form-label fw-semibold") }}{{ form.email(class="form-control", type="email", required=true) }}</div>
+        <div class="col-md-6">{{ form.role.label(class="form-label fw-semibold") }}{{ form.role(class="form-select", required=true) }}</div>
+        <div class="col-md-6">{{ form.department_id.label(class="form-label fw-semibold") }}{{ form.department_id(class="form-select", required=true) }}</div>
+        <div class="col-12">{{ form.temporary_password.label(class="form-label fw-semibold") }}{{ form.temporary_password(class="form-control", autocomplete="new-password", required=true) }}<div class="form-text">At least 12 characters, using at least three character types. Share it securely.</div></div>
+      </div>
+      <button class="btn btn-primary mt-4" type="submit" {% if not departments %}disabled{% endif %}>Create user</button>
+    </form>
+  </div>
+</section>
+{% endblock %}

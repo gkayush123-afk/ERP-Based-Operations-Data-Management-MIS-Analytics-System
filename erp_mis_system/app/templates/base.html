@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>{% block title %}ERP MIS{% endblock %} | ERP MIS</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top border-bottom">
+    <div class="container">
+      <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
+        <span class="brand-mark"><i class="bi bi-bar-chart-line-fill"></i></span>
+        <span>ERP <span class="text-primary">MIS</span></span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="mainNav">
+        {% if not current_user.is_authenticated %}
+          <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}">Home</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}#features">Features</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}#how-it-works">How it Works</a></li>
+            <li class="nav-item"><a class="nav-link" href="{{ url_for('main.index') }}#about">About</a></li>
+            <li class="nav-item ms-lg-2"><a class="btn btn-outline-primary btn-sm px-3" href="{{ url_for('auth.login') }}">Login</a></li>
+            <li class="nav-item"><a class="btn btn-primary btn-sm px-3" href="{{ url_for('auth.register') }}">Register</a></li>
+          </ul>
+        {% else %}
+          <div class="ms-auto d-flex align-items-center gap-3">
+            <a class="nav-link" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+            <div class="dropdown">
+              <button class="btn btn-link nav-link dropdown-toggle text-decoration-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">Records</button>
+              <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="{{ url_for('attendance.index') }}">Attendance</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('attendance.create') }}">Daily attendance entry</a></li>
+                {% if current_user.role in ["admin", "manager"] %}
+                  <li><a class="dropdown-item" href="{{ url_for('attendance.index', verification_status='pending') }}">Attendance verification</a></li>
+                {% endif %}
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('employees.index') }}">Employees</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('employees.create') }}">Add employee</a></li>
+                <li><a class="dropdown-item" href="{{ url_for('employees.import_excel') }}">Import employees</a></li>
+                {% if current_user.role in ["admin", "manager"] %}
+                  <li><a class="dropdown-item" href="{{ url_for('main.verify_records') }}">Verify records</a></li>
+                {% endif %}
+              </ul>
+            </div>
+            <a class="nav-link d-none d-lg-inline" href="{{ url_for('departments.index') }}">Departments</a>
+            {% if current_user.role == "admin" %}
+              <div class="dropdown">
+                <button class="btn btn-link nav-link dropdown-toggle text-decoration-none" type="button" data-bs-toggle="dropdown" aria-expanded="false">Administration</button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><a class="dropdown-item" href="{{ url_for('departments.index') }}">Manage departments</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('users.index') }}">User management</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('users.create') }}">Create user</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('users.audit_logs') }}">Audit logs</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('main.delete_records') }}">Delete records</a></li>
+                </ul>
+              </div>
+            {% endif %}
+            {% if current_user.role in ["admin", "manager"] %}
+              <a class="nav-link d-none d-lg-inline" href="{{ url_for('data_quality.index') }}">Data quality</a>
+            {% endif %}
+            {% if current_user.role in ["admin", "manager"] %}
+              <a class="nav-link d-none d-lg-inline" href="{{ url_for('reports.index') }}">Reports &amp; exports</a>
+            {% endif %}
+            <a class="nav-link d-none d-lg-inline" href="{{ url_for('auth.change_password') }}">Change password</a>
+            <span class="small text-secondary d-none d-md-inline">{{ current_user.full_name }}</span>
+            <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-outline-secondary btn-sm" type="submit">Log out</button>
+            </form>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <div class="container flash-container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, message in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+    </div>
+    {% block content %}{% endblock %}
+  </main>
+
+  {% block footer %}
+  <footer class="site-footer">
+    <div class="container d-flex flex-column flex-md-row justify-content-between gap-2">
+      <span>&copy; {{ current_year }} ERP Data Management &amp; MIS Reporting System</span>
+      <span>Contact: <a href="mailto:contact@example.com">contact@example.com</a> <span class="mx-2">|</span> Developed by Your Name</span>
+    </div>
+  </footer>
+  {% endblock %}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/validation.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<section class="dashboard-section">
+  <div class="container py-5">
+    <a class="small text-decoration-none" href="{{ url_for('main.dashboard') }}"><i class="bi bi-arrow-left me-1"></i>Back to dashboard</a>
+    <div class="coming-soon mt-4">
+      <i class="bi bi-hourglass-split"></i>
+      <h1 class="h4 mt-3">{{ title }}</h1>
+      <p class="text-secondary mb-0">{{ description }}</p>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Data quality{% endblock %}
+{% block content %}
+{% set visible_categories = [issue_filter] if issue_filter else ["missing", "duplicates", "invalid"] %}
+<section class="dashboard-section"><div class="container py-5">
+  <div class="mb-4"><span class="eyebrow">Validation</span><h1 class="h2 mt-2 mb-1">Data quality</h1><p class="text-secondary mb-0">Review missing, duplicate, and invalid records and open the source row to correct it.</p></div>
+
+  <form class="info-panel mb-4" method="get">
+    <div class="row g-3 align-items-end">
+      <div class="col-md-4"><label class="form-label fw-semibold" for="start_date">Attendance range from</label><input class="form-control" id="start_date" name="start_date" type="date" value="{{ start_date }}" required></div>
+      <div class="col-md-4"><label class="form-label fw-semibold" for="end_date">Attendance range to</label><input class="form-control" id="end_date" name="end_date" type="date" value="{{ end_date }}" required></div>
+      {% if current_user.role == "admin" %}
+      <div class="col-md-4"><label class="form-label fw-semibold" for="department_id">Department</label><select class="form-select" id="department_id" name="department_id"><option value="">All departments</option>{% for department in departments %}<option value="{{ department.id }}" {% if department_id == department.id %}selected{% endif %}>{{ department.name }}</option>{% endfor %}</select></div>
+      {% endif %}
+      <div class="col-12 d-flex gap-2"><button class="btn btn-primary" type="submit">Apply filters</button><a class="btn btn-outline-secondary" href="{{ url_for('data_quality.index') }}">Reset</a></div>
+    </div>
+  </form>
+
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('data_quality.index', start_date=start_date, end_date=end_date, department_id=department_id) }}"><i class="bi bi-clipboard2-pulse"></i><span><strong>{{ summary.total }} total issues</strong><small>For current filters</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('data_quality.index', start_date=start_date, end_date=end_date, department_id=department_id, issue='missing') }}"><i class="bi bi-exclamation-circle"></i><span><strong>{{ summary.missing }} missing</strong><small>Required fields or attendance</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('data_quality.index', start_date=start_date, end_date=end_date, department_id=department_id, issue='duplicates') }}"><i class="bi bi-files"></i><span><strong>{{ summary.duplicates }} duplicates</strong><small>Codes, emails, or dates</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('data_quality.index', start_date=start_date, end_date=end_date, department_id=department_id, issue='invalid') }}"><i class="bi bi-shield-exclamation"></i><span><strong>{{ summary.invalid }} invalid</strong><small>Future dates or time ranges</small></span></a></div>
+  </div>
+
+  {% for category in visible_categories %}
+    {% set category_title = {"missing": "Missing mandatory data", "duplicates": "Duplicate records", "invalid": "Invalid data"}[category] %}
+    {% set entries = report.get(category, []) %}
+    <div class="info-panel mb-4">
+      <div class="d-flex justify-content-between align-items-center mb-3">
+        <h2 class="h5 mb-0">{{ category_title }}</h2>
+        <span class="badge text-bg-light border">{{ entries|length }} issue(s)</span>
+      </div>
+      <div class="table-responsive"><table class="table align-middle mb-0">
+        <thead><tr><th>Issue</th><th>Record</th><th>Details</th><th class="text-end">Fix</th></tr></thead>
+        <tbody>
+        {% for issue in entries %}
+          <tr>
+            <td><span class="badge {% if category == 'missing' %}text-bg-warning{% elif category == 'duplicates' %}text-bg-info{% else %}text-bg-danger{% endif %}">{{ category_title }}</span></td>
+            <td>{{ issue.entity|title }} #{{ issue.entity_id }}{% if issue.extra.employee_code %}<small class="d-block text-secondary">{{ issue.extra.employee_code }}</small>{% endif %}</td>
+            <td>{{ issue.message }}{% if issue.extra.value %}<small class="d-block text-secondary">Value: {{ issue.extra.value }}</small>{% endif %}{% if issue.extra.date_range %}<small class="d-block text-secondary">{{ issue.extra.date_range }}</small>{% endif %}</td>
+            <td class="text-end"><a class="btn btn-outline-primary btn-sm" href="{{ issue.fix_url }}">Fix / edit</a></td>
+          </tr>
+        {% else %}
+          <tr><td class="text-center text-secondary py-4" colspan="4">No issues in this category for the selected scope.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+    </div>
+  {% endfor %}
+</div></section>
+{% endblock %}
