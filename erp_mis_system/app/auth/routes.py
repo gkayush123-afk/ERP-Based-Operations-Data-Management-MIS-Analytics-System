@@ -4,7 +4,7 @@ from urllib.parse import urlsplit
 from flask import abort, current_app, flash, redirect, render_template, request, session, url_for
 from flask_login import current_user, login_user, logout_user
 from sqlalchemy import func
-from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from ..extensions import db
 from ..models import Department, User
@@ -35,11 +35,21 @@ def login():
     form = LoginForm()
     if form.validate_on_submit():
         username = form.username.data.strip()
-        user = db.session.scalar(
-            db.select(User)
-            .where(func.lower(User.username) == username.lower())
-            .with_for_update()
-        )
+        try:
+            user = db.session.scalar(
+                db.select(User)
+                .where(func.lower(User.username) == username.lower())
+                .with_for_update()
+            )
+        except SQLAlchemyError:
+            db.session.rollback()
+            current_app.logger.exception("Database unavailable while processing login.")
+            flash(
+                "Login is temporarily unavailable because the database is not ready. "
+                "Please try again later or contact the administrator.",
+                "danger",
+            )
+            return render_template("auth/login.html", form=form), 503
 
         if user is None:
             log_action(
@@ -149,11 +159,12 @@ def register():
         departments = db.session.scalars(
             db.select(Department).where(Department.is_active.is_(True)).order_by(Department.name)
         ).all()
-    except OperationalError:
+    except SQLAlchemyError:
         db.session.rollback()
         current_app.logger.exception("Database unavailable while loading registration departments.")
         flash(
-            "Registration is temporarily unavailable because the database cannot be reached.",
+            "Registration is temporarily unavailable because the database is not ready. "
+            "Please try again later or contact the administrator.",
             "danger",
         )
         return render_template("auth/register.html", form=form, departments=[]), 503
@@ -214,11 +225,12 @@ def register():
                     "danger",
                 )
                 return render_template("auth/register.html", form=form, departments=departments)
-        except OperationalError:
+        except SQLAlchemyError:
             db.session.rollback()
             current_app.logger.exception("Database unavailable while processing registration.")
             flash(
-                "Registration could not be completed because the database cannot be reached.",
+                "Registration could not be completed because the database is not ready. "
+                "Please try again later or contact the administrator.",
                 "danger",
             )
             return render_template("auth/register.html", form=form, departments=departments), 503

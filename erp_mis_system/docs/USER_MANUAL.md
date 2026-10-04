@@ -9,6 +9,10 @@
 
 Attendance status values are Present, Absent, Leave, and Half-day. Verification values are Pending, Verified, and Rejected. Filters limit visible rows; always confirm the selected dates, department, and status before changing or exporting data.
 
+## Demo environment
+
+Use the demo usernames and passwords provided privately by the demo operator; credentials are intentionally not published in this manual. The sample `demo_manager` account demonstrates department-level review and reports. The sample `demo_staff` account demonstrates Data-entry access and cannot verify attendance. In the seeded Operations department, the Manager can open **Attendance verification** to review the sample pending record, while historical sample attendance is already verified. Demo user accounts do not replace the Admin account, and public registrations still require Admin approval.
+
 ## Admin
 
 ### Review registrations

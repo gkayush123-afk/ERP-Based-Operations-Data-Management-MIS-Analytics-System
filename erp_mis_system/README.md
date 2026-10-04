@@ -29,13 +29,19 @@ Python application/server/test dependencies are pinned in `requirements.txt`.
 3. Copy `.env.example` to `.env`, replace all placeholders, generate a random secret key, and securely configure MySQL credentials.
 4. Create the database and restricted runtime account as described in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 5. On a new database, run `python seed.py` once to create the initial schema, General department, and administrator. On an existing database, back up first and apply only the required numbered migrations exactly once in order.
-6. Optional demonstration records: `python seed_demo.py` adds five departments, 50 employees, and weekday attendance for the previous full month. It is safe to rerun and preserves existing matching attendance.
+6. Optional demo setup: keep `DATABASE_URL` pointed at the same database used by the app, set private `DEMO_MANAGER_PASSWORD` and `DEMO_STAFF_PASSWORD` values, then run `python seed_demo.py`. It adds one Operations department, five employees, previous-month attendance, a pending Manager review example, and active Manager/Staff demo accounts. It is safe to rerun and preserves existing records.
 7. Start production using [Waitress on Windows](docs/DEPLOYMENT.md#4-windows-with-waitress) or [Gunicorn and Nginx on Linux](docs/DEPLOYMENT.md#5-linux-with-gunicorn-and-nginx). Do not use Flask's development server in production.
 8. Run tests before delivery: `python -m pytest`.
 
 ## Initial administrator login
 
 There is **no shared default password**. `seed.py` creates the first active administrator using `ADMIN_USERNAME`, `ADMIN_PASSWORD`, `ADMIN_EMAIL`, and `ADMIN_FULL_NAME` from the private `.env`. The example username is `admin`, but the operator must replace the sample password with a strong unique value before running the seed. The seed script will not overwrite an existing administrator. Sign in using the exact configured username and password; then change the password through the account menu.
+
+## Demo role accounts
+
+Set `DEMO_MANAGER_PASSWORD` and `DEMO_STAFF_PASSWORD` privately in the deployment environment, then run `python seed_demo.py` using the same `DATABASE_URL` as the running app. The seeder creates `demo_manager` (Manager) and `demo_staff` (Data-entry Staff) in the Operations department, with passwords stored as hashes. Usernames, email addresses, and passwords can be customized with the corresponding `DEMO_MANAGER_*` and `DEMO_STAFF_*` variables. Passwords must be at least 12 characters and include at least three character groups. The script never prints passwords.
+
+Demo Manager can review the sample pending attendance record and see Operations reports. Demo Staff can work with Operations data but cannot verify attendance. Publicly registered users remain pending Data-entry accounts until an Admin approves them; the demo seeder does not bypass that approval workflow. Do not publish demo passwords in source control or public documentation; share them only with intended demo users. Configure demo accounts only on a disposable demo deployment.
 
 ## Environment variables
 
@@ -47,8 +53,11 @@ There is **no shared default password**. `seed.py` creates the first active admi
 | `ADMIN_PASSWORD` | Initial administrator password; at least 12 characters and 3 character classes |
 | `ADMIN_EMAIL` | Initial administrator email |
 | `ADMIN_FULL_NAME` | Initial administrator display name |
+| `DEMO_MANAGER_PASSWORD` | Optional private password for the active demo Manager account |
+| `DEMO_STAFF_PASSWORD` | Optional private password for the active demo Data-entry account |
 | `APP_ENV` | `production` by default; `development` opts into development config |
 | `SESSION_COOKIE_SECURE` | `true` for HTTPS; production config always enforces secure cookies |
+| `ALLOW_SQLITE_FALLBACK` | Set `false` in production so database configuration failures are not hidden by a local SQLite database |
 | `TRUST_PROXY` | Enable `ProxyFix` only behind a trusted reverse proxy |
 | `PROXY_FIX_HOPS` | Number of trusted reverse-proxy hops; match actual topology |
 | `MYSQL_DATABASE` | Optional database name for `scripts/backup_mysql.sh` |
@@ -79,7 +88,7 @@ deploy/nginx/         example reverse-proxy configuration
 docs/                 deployment guide and role-specific user manual
 tests/                pytest coverage
 seed.py                initial schema and administrator
-seed_demo.py           optional realistic demonstration records
+seed_demo.py           optional demo accounts and demonstration records
 wsgi.py                production WSGI application entry point
 run.py                 local/Waitress-compatible app entry point
 ```

@@ -10,6 +10,7 @@
 - Generate `SECRET_KEY` with `python -c "import secrets; print(secrets.token_urlsafe(48))"`.
 - Set a long, unique `ADMIN_PASSWORD` (minimum 12 characters and at least three character classes).
 - Set `SESSION_COOKIE_SECURE=true`, `APP_ENV=production`, `DATABASE_URL`, and the admin seed values.
+- Set `ALLOW_SQLITE_FALLBACK=false` in production so a broken MySQL connection cannot silently direct demo writes to a local SQLite database.
 - For Nginx reverse proxy, configure `TRUST_PROXY=true` and `PROXY_FIX_HOPS=1`; the included Nginx config overwrites forwarded client/protocol/host headers. Do not enable ProxyFix if the app is directly internet-accessible.
 
 ## 2. Create a restricted application database identity
@@ -46,12 +47,17 @@ For a new database, configure the setup `DATABASE_URL` temporarily and run:
 
 ```text
 python seed.py
-python seed_demo.py   # optional; uses the previous complete month
 ```
 
 For an existing database, take a verified backup and apply the applicable numbered migrations in order (002, 003, 004, 005) exactly once. New databases created from current models already include those columns/indexes; do not replay old migrations against them. After the seed/migration steps, set the restricted runtime account in production `DATABASE_URL`.
 
 The first admin is the account configured in `.env` as `ADMIN_USERNAME` and `ADMIN_PASSWORD`; `seed.py` creates it only if absent and does not print the password or overwrite an existing account. There is no shared default password. Sign in and immediately change the initial admin password if it was delivered to the operator in a less secure channel.
+
+### Optional Render demo accounts and records
+
+In the private Render environment, set strong `DEMO_MANAGER_PASSWORD` and `DEMO_STAFF_PASSWORD` values (at least 12 characters and at least three character groups). Optionally set `DEMO_MANAGER_USERNAME`, `DEMO_MANAGER_EMAIL`, `DEMO_MANAGER_FULL_NAME` and the corresponding `DEMO_STAFF_*` values. Then run `python seed_demo.py` from the deployed project directory using the Render service's exact `DATABASE_URL`. This step is separate from deploying the web service: `wsgi.py` does not create the production schema or seed accounts automatically. Confirm the seeder output reports two demo role accounts, and verify the web service uses that same database URL. Never paste passwords into chat, source control, or deployment logs. The seeder stores password hashes and does not print credentials.
+
+The optional seed creates one Operations department, five employees, verified attendance for the previous full month, and a pending attendance record for Manager review. The Manager and Staff demo accounts are active and department-scoped. Public registrations remain pending Staff accounts requiring Admin approval. The seeder is idempotent and does not delete existing data; an existing username/email collision with another account is reported instead of overwritten.
 
 ## 4. Windows with Waitress
 
