@@ -1,68 +1,124 @@
 {% extends "base.html" %}
 {% block title %}Home{% endblock %}
 {% block content %}
-<section id="about" class="section-pad">
+<section class="landing-hero" id="about">
+  <div class="container landing-hero-inner">
+    <div class="landing-copy">
+      <span class="eyebrow">Operations data management &amp; MIS reporting system</span>
+      <h1>Manage Operations.<br>Simplify Data.<br><span>Generate MIS Reports.</span></h1>
+      <p class="hero-copy">A centralized platform to manage operational data, streamline workflows, and generate accurate MIS reports for better decision making.</p>
+      <div class="d-flex flex-wrap gap-3 mt-4">
+        <a class="btn btn-primary px-4" href="{{ url_for('auth.login') }}">Login to ERP <i class="bi bi-arrow-right ms-2"></i></a>
+        <a class="btn btn-outline-primary px-4" href="#features">Explore Features</a>
+      </div>
+      <p class="hero-trust mt-4 mb-0"><i class="bi bi-shield-check me-2"></i>Department-scoped access with reviewable workflows</p>
+    </div>
+
+    <div class="landing-preview-wrap" aria-label="Illustration of the ERP MIS dashboard">
+      <div class="landing-preview">
+        <aside class="preview-sidebar">
+          <div class="preview-brand"><span class="brand-mark"><i class="bi bi-bar-chart-line-fill"></i></span><strong>ERP MIS</strong></div>
+          <div class="preview-nav-item active"><i class="bi bi-grid-1x2-fill"></i>Dashboard</div>
+          <div class="preview-nav-item"><i class="bi bi-people-fill"></i>Employees</div>
+          <div class="preview-nav-item"><i class="bi bi-calendar-check"></i>Attendance</div>
+          <div class="preview-nav-item"><i class="bi bi-bar-chart"></i>Reports</div>
+          <div class="preview-nav-item"><i class="bi bi-building"></i>Departments</div>
+          <div class="preview-nav-item"><i class="bi bi-gear"></i>Settings</div>
+        </aside>
+        <div class="preview-content">
+          <div class="preview-topbar"><div><span class="small text-secondary">Overview</span><h2>Dashboard</h2></div><span class="preview-avatar"><i class="bi bi-person-fill"></i></span></div>
+          <div class="preview-metrics">
+            <div class="preview-metric"><span class="metric-icon metric-blue"><i class="bi bi-people"></i></span><small>Employees</small><strong>Records</strong></div>
+            <div class="preview-metric"><span class="metric-icon metric-green"><i class="bi bi-check2-circle"></i></span><small>Attendance</small><strong>Tracked</strong></div>
+            <div class="preview-metric"><span class="metric-icon metric-orange"><i class="bi bi-hourglass-split"></i></span><small>Reviews</small><strong>Pending</strong></div>
+            <div class="preview-metric"><span class="metric-icon metric-red"><i class="bi bi-exclamation-circle"></i></span><small>Data quality</small><strong>Checks</strong></div>
+          </div>
+          <div class="preview-panels">
+            <div class="preview-panel preview-chart">
+              <div class="preview-panel-heading"><div><strong>Monthly performance</strong><small>Attendance overview</small></div><i class="bi bi-three-dots"></i></div>
+              <div class="chart-area" aria-hidden="true">
+                <div class="chart-y-labels"><span>100%</span><span>75%</span><span>50%</span><span>25%</span></div>
+                <div class="chart-columns"><i style="--bar-height:42%"></i><i style="--bar-height:64%"></i><i style="--bar-height:54%"></i><i style="--bar-height:78%"></i><i style="--bar-height:61%"></i><i style="--bar-height:90%"></i><i style="--bar-height:72%"></i></div>
+              </div>
+              <div class="chart-x-labels"><span>Week 1</span><span>Week 2</span><span>Week 3</span><span>Week 4</span></div>
+            </div>
+            <div class="preview-panel preview-departments">
+              <div class="preview-panel-heading"><div><strong>Department-wise records</strong><small>By department</small></div><i class="bi bi-three-dots"></i></div>
+              <div class="donut-wrap"><div class="donut-chart"><span>Teams</span></div></div>
+              <div class="preview-legend"><span><i class="legend-dot dot-a"></i>HR</span><span><i class="legend-dot dot-b"></i>Finance</span><span><i class="legend-dot dot-c"></i>Sales</span><span><i class="legend-dot dot-d"></i>Operations</span></div>
+            </div>
+          </div>
+          <div class="preview-note"><i class="bi bi-info-circle me-1"></i>Illustrative dashboard preview</div>
+        </div>
+      </div>
+      <span class="landing-orb landing-orb-one"></span><span class="landing-orb landing-orb-two"></span>
+      <span class="landing-dots" aria-hidden="true"></span>
+    </div>
+  </div>
+</section>
+
+<section id="features" class="section-pad landing-features">
   <div class="container">
     <div class="section-heading text-center mx-auto">
-      <span class="eyebrow">About the project</span>
-      <h2 class="mt-2">From scattered records to a shared source of truth</h2>
-      <p class="text-secondary">Manual spreadsheets can lead to duplicate entries, missing information, inconsistent updates, and reporting that takes too long.</p>
+      <span class="eyebrow">Key features</span>
+      <h2 class="mt-2">Everything You Need in One Place</h2>
+      <p class="text-secondary">Our ERP MIS system brings together data management, reporting, and analytics to help you work smarter and faster.</p>
     </div>
     <div class="row g-4 mt-3">
-      <div class="col-md-6"><div class="info-panel h-100"><span class="panel-icon icon-warm"><i class="bi bi-exclamation-triangle"></i></span><h3 class="h5 mt-3">The challenge</h3><p class="text-secondary mb-0">Scattered Excel sheets make it hard to know which data is current. Missing records and manual consolidation can reduce confidence and slow down decisions.</p></div></div>
-      <div class="col-md-6"><div class="info-panel h-100"><span class="panel-icon icon-cool"><i class="bi bi-lightbulb"></i></span><h3 class="h5 mt-3">The solution</h3><p class="text-secondary mb-0">A centralized system organizes operational data, checks its quality, supports review workflows, and prepares clear MIS reports from trusted records.</p></div></div>
+      <div class="col-md-4"><article class="feature-card landing-feature-card h-100"><span class="feature-icon"><i class="bi bi-database"></i></span><h3 class="h5 mt-3">Centralized Data Management</h3><p class="text-secondary">Store, manage, and update operational data in a single, secure system.</p><a href="{{ url_for('auth.register') }}">Learn More <i class="bi bi-arrow-right"></i></a></article></div>
+      <div class="col-md-4"><article class="feature-card landing-feature-card h-100"><span class="feature-icon feature-icon-green"><i class="bi bi-bar-chart-line-fill"></i></span><h3 class="h5 mt-3">MIS Reporting</h3><p class="text-secondary">Generate daily, weekly, and monthly reports with easy-to-use export options.</p><a href="{{ url_for('auth.register') }}">Learn More <i class="bi bi-arrow-right"></i></a></article></div>
+      <div class="col-md-4"><article class="feature-card landing-feature-card h-100"><span class="feature-icon feature-icon-purple"><i class="bi bi-people-fill"></i></span><h3 class="h5 mt-3">Role-Based Access</h3><p class="text-secondary">Secure access for Admin, Manager, and Data-entry operations with team permissions.</p><a href="{{ url_for('auth.register') }}">Learn More <i class="bi bi-arrow-right"></i></a></article></div>
     </div>
   </div>
 </section>
 
-<section id="features" class="section-pad section-muted">
+<section id="how-it-works" class="section-pad landing-process">
   <div class="container">
-    <div class="section-heading text-center mx-auto"><span class="eyebrow">Key features</span><h2 class="mt-2">Designed for dependable day-to-day operations</h2></div>
-    <div class="row g-3 mt-3">
-      {% set features = [
-        ('bi-database', 'Centralized Data Management', 'Keep key operational information organized in one system.'),
-        ('bi-shield-lock', 'Role-Based Access', 'Give users access appropriate to their responsibilities.'),
-        ('bi-clipboard2-check', 'Data Validation', 'Identify missing information and duplicate records.'),
-        ('bi-calendar3', 'MIS Reports', 'Review daily, weekly, and monthly performance summaries.'),
-        ('bi-diagram-3', 'Department-wise Analysis', 'Explore useful metrics by department.'),
-        ('bi-file-earmark-arrow-down', 'Excel/PDF Export', 'Share reports in familiar, practical formats.'),
-        ('bi-journal-check', 'Audit Trail', 'Keep a record of important changes and actions.')
-      ] %}
-      {% for icon, title, description in features %}
-      <div class="col-sm-6 col-lg-3"><article class="feature-card h-100"><span class="feature-icon"><i class="bi {{ icon }}"></i></span><h3 class="h6 mt-3">{{ title }}</h3><p class="small text-secondary mb-0">{{ description }}</p></article></div>
-      {% endfor %}
+    <div class="section-heading text-center mx-auto">
+      <span class="eyebrow">How it works</span>
+      <h2 class="mt-2">Simple Steps. Complete Control.</h2>
+      <p class="text-secondary">From data entry to MIS reports, everything flows seamlessly.</p>
+    </div>
+    <div class="process-flow mt-5">
+      <article class="process-step"><span class="process-icon process-blue"><i class="bi bi-file-earmark-text"></i></span><h3>1. Data Entry</h3><p>Enter operational data through a clear and user-friendly interface.</p></article>
+      <span class="process-arrow"><i class="bi bi-arrow-right"></i></span>
+      <article class="process-step"><span class="process-icon process-green"><i class="bi bi-shield-check"></i></span><h3>2. Verification</h3><p>Review and validate data for accuracy and completeness.</p></article>
+      <span class="process-arrow"><i class="bi bi-arrow-right"></i></span>
+      <article class="process-step"><span class="process-icon process-purple"><i class="bi bi-database"></i></span><h3>3. Database</h3><p>Store verified records in a centralized database.</p></article>
+      <span class="process-arrow"><i class="bi bi-arrow-right"></i></span>
+      <article class="process-step"><span class="process-icon process-orange"><i class="bi bi-bar-chart-line-fill"></i></span><h3>4. MIS Reports</h3><p>Generate useful reports for analysis and decisions.</p></article>
     </div>
   </div>
 </section>
 
-<section class="section-pad">
+<section class="landing-summary">
   <div class="container">
-    <div class="section-heading text-center mx-auto"><span class="eyebrow">User roles</span><h2 class="mt-2">The right tools for every responsibility</h2></div>
-    <div class="row g-4 mt-3">
-      <div class="col-md-4"><div class="role-card"><span class="role-icon role-admin"><i class="bi bi-person-gear"></i></span><h3 class="h5 mt-3">Admin</h3><p class="text-secondary mb-0">Oversees system access, approves registrations, and manages organization-wide configuration.</p></div></div>
-      <div class="col-md-4"><div class="role-card"><span class="role-icon role-manager"><i class="bi bi-person-badge"></i></span><h3 class="h5 mt-3">Manager</h3><p class="text-secondary mb-0">Reviews departmental information, verifies submissions, and monitors team reports.</p></div></div>
-      <div class="col-md-4"><div class="role-card"><span class="role-icon role-entry"><i class="bi bi-person-plus"></i></span><h3 class="h5 mt-3">Data-Entry Staff</h3><p class="text-secondary mb-0">Enters and maintains assigned operational information for review.</p></div></div>
+    <div class="landing-summary-heading"><span class="eyebrow">Our impact</span><h2>Better Data. Better Decisions.</h2></div>
+    <div class="summary-items">
+      <div><i class="bi bi-people"></i><strong>Employee Records</strong><span>Organized by department</span></div>
+      <div><i class="bi bi-calendar-check"></i><strong>Daily Attendance</strong><span>Clear status tracking</span></div>
+      <div><i class="bi bi-check-circle"></i><strong>Review Workflow</strong><span>Pending and verified records</span></div>
+      <div><i class="bi bi-graph-up-arrow"></i><strong>MIS Reporting</strong><span>Daily, weekly, monthly</span></div>
     </div>
   </div>
 </section>
+{% endblock %}
 
-<section id="how-it-works" class="section-pad section-muted">
+{% block footer %}
+<footer class="landing-footer">
   <div class="container">
-    <div class="section-heading text-center mx-auto"><span class="eyebrow">How it works</span><h2 class="mt-2">A simple, reviewable process</h2></div>
-    <div class="row g-4 mt-3">
-      {% set steps = [('01', 'Login', 'Sign in with your approved account.'), ('02', 'Enter Data', 'Add information through structured forms.'), ('03', 'Validate & Verify', 'Check data quality and review submissions.'), ('04', 'Generate Reports', 'Use verified records for MIS reporting.')] %}
-      {% for number, title, description in steps %}
-      <div class="col-sm-6 col-lg-3"><div class="step-card"><span class="step-number">{{ number }}</span><h3 class="h6 mt-3">{{ title }}</h3><p class="small text-secondary mb-0">{{ description }}</p></div></div>
-      {% endfor %}
+    <div class="landing-footer-main">
+      <div class="landing-footer-brand">
+        <a class="navbar-brand fw-bold d-inline-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
+          <span class="brand-mark"><i class="bi bi-bar-chart-line-fill"></i></span><span>ERP <span class="text-primary">MIS</span></span>
+        </a>
+        <p>Operational Data Management &amp; MIS Reporting System.</p>
+      </div>
+      <div><h2>Quick Links</h2><a href="{{ url_for('main.index') }}">Home</a><a href="#features">Features</a><a href="#how-it-works">How It Works</a><a href="#about">About</a></div>
+      <div><h2>Account</h2><a href="{{ url_for('auth.login') }}">Login</a><a href="{{ url_for('auth.register') }}">Register</a></div>
+      <div><h2>Explore</h2><a href="#features">Data Management</a><a href="#features">MIS Reporting</a><a href="#features">Role-Based Access</a></div>
     </div>
+    <div class="landing-footer-bottom"><span>&copy; {{ current_year }} ERP Data Management &amp; MIS Reporting System</span><span>Built for organized, reviewable operations</span></div>
   </div>
-</section>
-
-<section class="section-pad">
-  <div class="container text-center">
-    <div class="section-heading mx-auto"><span class="eyebrow">Technology</span><h2 class="mt-2">Built with familiar, proven tools</h2></div>
-    <div class="tech-list mt-4">{% for tech in ['Python', 'Flask', 'MySQL', 'HTML', 'CSS', 'JavaScript', 'MS Excel'] %}<span class="tech-badge">{{ tech }}</span>{% endfor %}</div>
-    <div class="cta-panel mt-5"><div><h2 class="h3 mb-2">Ready to get started?</h2><p class="mb-0 text-white-50">Request an account and your administrator will review it.</p></div><a class="btn btn-light btn-lg text-primary fw-semibold" href="{{ url_for('auth.register') }}">Register now <i class="bi bi-arrow-right ms-2"></i></a></div>
-  </div>
-</section>
+</footer>
 {% endblock %}
