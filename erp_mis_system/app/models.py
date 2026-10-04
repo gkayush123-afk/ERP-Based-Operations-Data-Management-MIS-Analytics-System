@@ -147,7 +147,7 @@ class AttendanceRecord(db.Model):
     __table_args__ = (
         UniqueConstraint("employee_id", "attendance_date", name="uq_attendance_employee_date"),
         CheckConstraint(
-            "status IN ('present', 'absent', 'leave', 'half_day')",
+            "status IN ('present', 'absent', 'late', 'leave', 'half_day')",
             name="ck_attendance_status",
         ),
         CheckConstraint(
@@ -200,6 +200,68 @@ class AttendanceRecord(db.Model):
     employee = db.relationship("Employee", backref="attendance_records")
     verifier = db.relationship("User", foreign_keys=[verified_by])
     creator = db.relationship("User", foreign_keys=[created_by])
+
+
+class OperationRecord(db.Model):
+    """Operational data submitted by staff for manager verification.
+
+    Only records with status ``verified`` may be included in MIS reports.
+    """
+
+    __tablename__ = "operation_records"
+    __table_args__ = (
+        CheckConstraint(
+            "status IN ('pending', 'verified', 'rejected', 'needs_correction')",
+            name="ck_operation_records_status",
+        ),
+        CheckConstraint("total_records >= 0", name="ck_operation_records_total_nonneg"),
+        CheckConstraint("completed >= 0", name="ck_operation_records_completed_nonneg"),
+        CheckConstraint("pending >= 0", name="ck_operation_records_pending_nonneg"),
+        Index("ix_operation_records_date_status", "record_date", "status"),
+    )
+
+    id = db.Column(ID_TYPE, primary_key=True, autoincrement=True)
+    record_date = db.Column(db.Date, nullable=False, index=True)
+    employee_id = db.Column(
+        ID_TYPE,
+        db.ForeignKey("employees.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    department_id = db.Column(
+        ID_TYPE,
+        db.ForeignKey("departments.id", ondelete="RESTRICT"),
+        nullable=False,
+        index=True,
+    )
+    task_operation = db.Column(db.String(200), nullable=False)
+    total_records = db.Column(db.Integer, nullable=False, default=0)
+    completed = db.Column(db.Integer, nullable=False, default=0)
+    pending = db.Column(db.Integer, nullable=False, default=0)
+    status = db.Column(db.String(20), nullable=False, default="pending", index=True)
+    submitted_by = db.Column(
+        ID_TYPE,
+        db.ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    verified_by = db.Column(
+        ID_TYPE,
+        db.ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
+    verified_at = db.Column(db.DateTime, nullable=True)
+    rejection_reason = db.Column(db.String(500), nullable=True)
+    remarks = db.Column(db.String(1000), nullable=True)
+    correction_note = db.Column(db.String(500), nullable=True)
+    created_at = db.Column(db.DateTime, nullable=False, default=utcnow)
+    updated_at = db.Column(db.DateTime, nullable=False, default=utcnow, onupdate=utcnow)
+
+    employee = db.relationship("Employee", backref="operation_records")
+    department = db.relationship("Department", backref="operation_records")
+    submitter = db.relationship("User", foreign_keys=[submitted_by])
+    verifier = db.relationship("User", foreign_keys=[verified_by])
 
 
 @login_manager.user_loader

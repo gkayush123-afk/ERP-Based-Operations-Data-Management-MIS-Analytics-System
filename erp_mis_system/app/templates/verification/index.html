@@ -1,0 +1,343 @@
+{% extends "layout_app.html" %}
+{% block title %}Verification{% endblock %}
+{% macro page_url(p) %}{{ url_for('verification.index', page=p, employee_code=employee_code or None, department_id=department_id, status=status_filter or None, record_date=record_date or None, start_date=start_date or None, end_date=end_date or None) }}{% endmacro %}
+{% block app_content %}
+<div class="verification-content">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><span>Verification</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-shield-check"></i></span>
+      <div><h1>Verification</h1><p>Review and verify submitted operational data before it is included in MIS reports.</p></div>
+    </div>
+    <form class="verification-date-form" method="get" action="{{ url_for('verification.index') }}" aria-label="Date range">
+      {% if employee_code %}<input type="hidden" name="employee_code" value="{{ employee_code }}">{% endif %}
+      {% if department_id %}<input type="hidden" name="department_id" value="{{ department_id }}">{% endif %}
+      {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+      {% if record_date %}<input type="hidden" name="record_date" value="{{ record_date }}">{% endif %}
+      <i class="bi bi-calendar3" aria-hidden="true"></i>
+      <label>From <input class="form-control form-control-sm" type="date" name="start_date" value="{{ start_date }}" onchange="this.form.submit()"></label>
+      <label>To <input class="form-control form-control-sm" type="date" name="end_date" value="{{ end_date }}" onchange="this.form.submit()"></label>
+    </form>
+  </div>
+
+  <div class="verification-stats">
+    <a class="verification-stat" href="{{ url_for('verification.index', employee_code=employee_code or None, department_id=department_id, record_date=record_date or None, start_date=start_date or None, end_date=end_date or None) }}">
+      <span class="verification-stat-icon stat-blue"><i class="bi bi-clipboard2-check"></i></span>
+      <span><small>Total Submitted</small><strong>{{ summary.total }}</strong></span><i class="bi bi-chevron-right stat-arrow"></i>
+    </a>
+    <a class="verification-stat" href="{{ url_for('verification.index', status='pending', employee_code=employee_code or None, department_id=department_id, record_date=record_date or None, start_date=start_date or None, end_date=end_date or None) }}">
+      <span class="verification-stat-icon stat-amber"><i class="bi bi-clock-history"></i></span>
+      <span><small>Pending Review</small><strong>{{ summary.pending }}</strong></span><i class="bi bi-chevron-right stat-arrow"></i>
+    </a>
+    <a class="verification-stat" href="{{ url_for('verification.index', status='verified', employee_code=employee_code or None, department_id=department_id, record_date=record_date or None, start_date=start_date or None, end_date=end_date or None) }}">
+      <span class="verification-stat-icon stat-green"><i class="bi bi-check-circle-fill"></i></span>
+      <span><small>Verified</small><strong>{{ summary.verified }}</strong></span><i class="bi bi-chevron-right stat-arrow"></i>
+    </a>
+    <a class="verification-stat" href="{{ url_for('verification.index', status='rejected', employee_code=employee_code or None, department_id=department_id, record_date=record_date or None, start_date=start_date or None, end_date=end_date or None) }}">
+      <span class="verification-stat-icon stat-red"><i class="bi bi-x-circle-fill"></i></span>
+      <span><small>Rejected</small><strong>{{ summary.rejected }}</strong></span><i class="bi bi-chevron-right stat-arrow"></i>
+    </a>
+    <a class="verification-stat" href="{{ url_for('verification.index', status='needs_correction', employee_code=employee_code or None, department_id=department_id, record_date=record_date or None, start_date=start_date or None, end_date=end_date or None) }}">
+      <span class="verification-stat-icon stat-purple"><i class="bi bi-pencil-square"></i></span>
+      <span><small>Needs Correction</small><strong>{{ summary.needs_correction }}</strong></span><i class="bi bi-chevron-right stat-arrow"></i>
+    </a>
+  </div>
+
+  <form class="verification-filter" method="get" action="{{ url_for('verification.index') }}">
+    <div class="verification-filter-field">
+      <label for="employee_code">Employee ID</label>
+      <input class="form-control" id="employee_code" name="employee_code" type="text" maxlength="40" placeholder="e.g. EMP-0001" value="{{ employee_code }}">
+    </div>
+    <div class="verification-filter-field">
+      <label for="department_id">Department</label>
+      <select class="form-select" id="department_id" name="department_id">
+        <option value="">All departments</option>
+        {% for department in departments %}
+          <option value="{{ department.id }}" {% if department_id == department.id %}selected{% endif %}>{{ department.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="verification-filter-field">
+      <label for="status">Status</label>
+      <select class="form-select" id="status" name="status">
+        <option value="">All statuses</option>
+        {% for value, label in statuses %}
+          <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="verification-filter-field">
+      <label for="record_date">Date</label>
+      <input class="form-control" id="record_date" name="record_date" type="date" value="{{ record_date }}">
+    </div>
+    <div class="verification-filter-field">
+      <label for="start_date">From</label>
+      <input class="form-control" id="start_date" name="start_date" type="date" value="{{ start_date }}">
+    </div>
+    <div class="verification-filter-field">
+      <label for="end_date">To</label>
+      <input class="form-control" id="end_date" name="end_date" type="date" value="{{ end_date }}">
+    </div>
+    <div class="verification-filter-actions">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i><span>Search</span></button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('verification.index') }}"><i class="bi bi-arrow-counterclockwise"></i><span>Reset</span></a>
+    </div>
+  </form>
+
+  <section class="verification-records">
+    <div class="verification-records-heading">
+      <h2><i class="bi bi-list-ul"></i> Submitted Records</h2>
+      <a class="btn btn-sm btn-outline-primary" href="{{ url_for('verification.index') }}">View All Records <i class="bi bi-arrow-right"></i></a>
+    </div>
+    <form id="verification-bulk-form" method="post" action="{{ url_for('verification.bulk') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="approve">
+    </form>
+    <div class="table-responsive">
+      <table class="table verification-table align-middle mb-0">
+        <thead><tr>
+          <th><input class="form-check-input" type="checkbox" data-select-all aria-label="Select all pending records"></th>
+          <th>Date</th><th>Employee ID</th><th>Employee Name</th><th>Department</th>
+          <th>Task / Operation</th><th class="num">Total Records</th><th class="num">Completed</th><th class="num">Pending</th>
+          <th>Status</th><th>Remarks</th><th>Submitted By</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+          {% for record in pagination.items %}
+          {% set status_label = "Needs correction" if record.status == "needs_correction" else record.status|title %}
+          <tr>
+            <td>{% if record.status == "pending" %}<input class="form-check-input" form="verification-bulk-form" type="checkbox" name="record_ids" value="{{ record.id }}" data-pending-select aria-label="Select record {{ record.id }}">{% endif %}</td>
+            <td>{{ record.record_date.strftime("%d-%m-%Y") }}</td>
+            <td><strong>{{ record.employee.employee_code }}</strong></td>
+            <td>{{ record.employee.full_name }}</td>
+            <td>{{ record.department.name }}</td>
+            <td>{{ record.task_operation }}</td>
+            <td class="num">{{ record.total_records }}</td>
+            <td class="num">{{ record.completed }}</td>
+            <td class="num">{{ record.pending }}</td>
+            <td><span class="verification-status status-{{ record.status }}">{{ status_label }}</span></td>
+            <td>{{ record.remarks or "—" }}</td>
+            <td>{{ record.submitter.full_name if record.submitter else "—" }}</td>
+            <td><div class="verification-actions">
+              <button class="verification-action action-view" type="button" data-bs-toggle="modal" data-bs-target="#viewModal"
+                data-date="{{ record.record_date.strftime('%d-%m-%Y') }}" data-code="{{ record.employee.employee_code }}"
+                data-name="{{ record.employee.full_name }}" data-department="{{ record.department.name }}"
+                data-task="{{ record.task_operation }}" data-total="{{ record.total_records }}"
+                data-completed="{{ record.completed }}" data-pending="{{ record.pending }}"
+                data-status="{{ status_label }}" data-submitted="{{ record.submitter.full_name if record.submitter else '—' }}"
+                data-verified-by="{{ record.verifier.full_name if record.verifier else '—' }}"
+                data-verified-at="{{ record.verified_at.strftime('%d-%m-%Y %H:%M') if record.verified_at else '—' }}"
+                data-reason="{{ record.rejection_reason or '—' }}" data-remarks="{{ record.remarks or '—' }}" data-correction="{{ record.correction_note or '—' }}" aria-label="View record"><i class="bi bi-eye"></i></button>
+              {% if record.status == "pending" %}
+                <form id="approve-{{ record.id }}" method="post" action="{{ url_for('verification.approve', record_id=record.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="verification-action action-verify" type="submit" aria-label="Approve record"><i class="bi bi-check-lg"></i></button>
+                </form>
+                <button class="verification-action action-reject" type="button" data-bs-toggle="modal" data-bs-target="#rejectModal"
+                  data-reject-mode="single" data-reject-url="{{ url_for('verification.reject', record_id=record.id) }}"
+                  data-reject-title="Reject record #{{ record.id }} ({{ record.employee.employee_code }})" aria-label="Reject record"><i class="bi bi-x-lg"></i></button>
+                <button class="verification-action action-correct" type="button" data-bs-toggle="modal" data-bs-target="#correctionModal"
+                  data-correct-url="{{ url_for('verification.request_correction', record_id=record.id) }}"
+                  data-correct-title="Request correction for record #{{ record.id }} ({{ record.employee.employee_code }})" aria-label="Request correction" title="Request correction"><i class="bi bi-pencil-square"></i></button>
+              {% elif record.status == "needs_correction" %}
+                <a class="verification-action action-view" href="{{ url_for('verification.edit', record_id=record.id) }}" aria-label="Edit record" title="Fix and resubmit"><i class="bi bi-pencil"></i></a>
+              {% endif %}
+              <div class="dropdown">
+                <button class="verification-action" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="More actions"><i class="bi bi-three-dots-vertical"></i></button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                  <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#viewModal"
+                    data-date="{{ record.record_date.strftime('%d-%m-%Y') }}" data-code="{{ record.employee.employee_code }}"
+                    data-name="{{ record.employee.full_name }}" data-department="{{ record.department.name }}"
+                    data-task="{{ record.task_operation }}" data-total="{{ record.total_records }}"
+                    data-completed="{{ record.completed }}" data-pending="{{ record.pending }}"
+                    data-status="{{ status_label }}" data-submitted="{{ record.submitter.full_name if record.submitter else '—' }}"
+                    data-verified-by="{{ record.verifier.full_name if record.verifier else '—' }}"
+                    data-verified-at="{{ record.verified_at.strftime('%d-%m-%Y %H:%M') if record.verified_at else '—' }}"
+                    data-reason="{{ record.rejection_reason or '—' }}" data-remarks="{{ record.remarks or '—' }}" data-correction="{{ record.correction_note or '—' }}"><i class="bi bi-eye me-2"></i>View details</button></li>
+                  {% if record.status == "pending" %}
+                  <li><button class="dropdown-item" type="submit" form="approve-{{ record.id }}"><i class="bi bi-check-lg me-2"></i>Approve</button></li>
+                  <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#rejectModal"
+                    data-reject-mode="single" data-reject-url="{{ url_for('verification.reject', record_id=record.id) }}"
+                    data-reject-title="Reject record #{{ record.id }} ({{ record.employee.employee_code }})"><i class="bi bi-x-lg me-2"></i>Reject</button></li>
+                  <li><button class="dropdown-item" type="button" data-bs-toggle="modal" data-bs-target="#correctionModal"
+                    data-correct-url="{{ url_for('verification.request_correction', record_id=record.id) }}"
+                    data-correct-title="Request correction for record #{{ record.id }} ({{ record.employee.employee_code }})"><i class="bi bi-pencil-square me-2"></i>Request correction</button></li>
+                  {% elif record.status == "needs_correction" %}
+                  <li><a class="dropdown-item" href="{{ url_for('verification.edit', record_id=record.id) }}"><i class="bi bi-pencil me-2"></i>Fix and resubmit</a></li>
+                  {% endif %}
+                </ul>
+              </div>
+            </div></td>
+          </tr>
+          {% else %}
+          <tr><td colspan="13" class="verification-empty">No records found.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="verification-table-footer">
+      <span>Showing {{ pagination.first or 0 }}–{{ pagination.last or 0 }} of {{ pagination.total }} records</span>
+      {% if pagination.items %}
+        <button class="btn btn-sm btn-success" type="submit" form="verification-bulk-form" onclick="return confirm('Approve all selected pending records?');"><i class="bi bi-check2-all"></i> Approve selected</button>
+        <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="modal" data-bs-target="#rejectModal"
+          data-reject-mode="bulk" data-reject-url="{{ url_for('verification.bulk') }}" data-reject-title="Reject selected records"><i class="bi bi-x-circle"></i> Reject selected</button>
+      {% endif %}
+      {% if pagination.pages > 1 %}
+      <nav aria-label="Verification pages"><ul class="pagination pagination-sm mb-0">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}"><a class="page-link" href="{{ page_url(pagination.prev_num) }}" aria-label="Previous page"><i class="bi bi-chevron-left"></i></a></li>
+        {% set ns = namespace(pages=[]) %}
+        {% for p in range(1, pagination.pages + 1) %}
+          {% if p == 1 or p == pagination.pages or (p >= pagination.page - 1 and p <= pagination.page + 1) %}
+            {% set ns.pages = ns.pages + [p] %}
+          {% endif %}
+        {% endfor %}
+        {% set prev = namespace(v=0) %}
+        {% for p in ns.pages %}
+          {% if p - prev.v > 1 %}<li class="page-item disabled"><span class="page-link">…</span></li>{% endif %}
+          <li class="page-item {% if p == pagination.page %}active{% endif %}"><a class="page-link" href="{{ page_url(p) }}">{{ p }}</a></li>
+          {% set prev.v = p %}
+        {% endfor %}
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}"><a class="page-link" href="{{ page_url(pagination.next_num) }}" aria-label="Next page"><i class="bi bi-chevron-right"></i></a></li>
+      </ul></nav>
+      {% endif %}
+    </div>
+  </section>
+</div>
+
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="rejectModalForm" method="post" action="">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="action" value="reject">
+      <div id="rejectModalIds"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="rejectModalLabel">Reject record</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p id="rejectModalText" class="text-secondary"></p>
+          <div id="rejectModalWarning" class="alert alert-warning d-none">Select at least one pending record first.</div>
+          <label class="form-label" for="rejectModalReason">Reason (required)</label>
+          <textarea class="form-control" id="rejectModalReason" name="rejection_reason" rows="3" required maxlength="500" placeholder="Why is this record being rejected?"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-danger">Reject</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal fade" id="correctionModal" tabindex="-1" aria-labelledby="correctionModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="correctionModalForm" method="post" action="">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="correctionModalLabel">Request correction</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p id="correctionModalText" class="text-secondary">Describe what needs fixing. The record will be flagged until corrected.</p>
+          <label class="form-label" for="correctionModalNote">Correction note (required)</label>
+          <textarea class="form-control" id="correctionModalNote" name="correction_note" rows="3" required maxlength="500" placeholder="What should be corrected?"></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Send back for correction</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewModalLabel">Record details</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <dl class="row mb-0">
+          <dt class="col-sm-4">Date</dt><dd class="col-sm-8" data-view="date"></dd>
+          <dt class="col-sm-4">Employee ID</dt><dd class="col-sm-8" data-view="code"></dd>
+          <dt class="col-sm-4">Employee Name</dt><dd class="col-sm-8" data-view="name"></dd>
+          <dt class="col-sm-4">Department</dt><dd class="col-sm-8" data-view="department"></dd>
+          <dt class="col-sm-4">Task / Operation</dt><dd class="col-sm-8" data-view="task"></dd>
+          <dt class="col-sm-4">Total Records</dt><dd class="col-sm-8" data-view="total"></dd>
+          <dt class="col-sm-4">Completed</dt><dd class="col-sm-8" data-view="completed"></dd>
+          <dt class="col-sm-4">Pending</dt><dd class="col-sm-8" data-view="pending"></dd>
+          <dt class="col-sm-4">Status</dt><dd class="col-sm-8" data-view="status"></dd>
+          <dt class="col-sm-4">Submitted By</dt><dd class="col-sm-8" data-view="submitted"></dd>
+          <dt class="col-sm-4">Verified By</dt><dd class="col-sm-8" data-view="verifiedBy"></dd>
+          <dt class="col-sm-4">Verified At</dt><dd class="col-sm-8" data-view="verifiedAt"></dd>
+          <dt class="col-sm-4">Rejection Reason</dt><dd class="col-sm-8" data-view="reason"></dd>
+          <dt class="col-sm-4">Correction Note</dt><dd class="col-sm-8" data-view="correction"></dd>
+          <dt class="col-sm-4">Remarks</dt><dd class="col-sm-8" data-view="remarks"></dd>
+        </dl>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+  document.querySelector("[data-select-all]")?.addEventListener("change", (event) => {
+    document.querySelectorAll("[data-pending-select]").forEach((checkbox) => {
+      checkbox.checked = event.target.checked;
+    });
+  });
+
+  document.getElementById("correctionModal")?.addEventListener("show.bs.modal", (event) => {
+    const button = event.relatedTarget;
+    document.getElementById("correctionModalForm").action = button?.dataset.correctUrl || "";
+    document.getElementById("correctionModalLabel").textContent = button?.dataset.correctTitle || "Request correction";
+  });
+
+  const rejectModal = document.getElementById("rejectModal");  rejectModal?.addEventListener("show.bs.modal", (event) => {
+    const button = event.relatedTarget;
+    const form = document.getElementById("rejectModalForm");
+    form.action = button?.dataset.rejectUrl || "";
+    document.getElementById("rejectModalLabel").textContent = button?.dataset.rejectTitle || "Reject record";
+    document.getElementById("rejectModalWarning").classList.add("d-none");
+    const idsBox = document.getElementById("rejectModalIds");
+    idsBox.innerHTML = "";
+    if (button?.dataset.rejectMode === "bulk") {
+      const checked = [...document.querySelectorAll("[data-pending-select]:checked")];
+      document.getElementById("rejectModalText").textContent =
+        `Reject ${checked.length} selected record(s)? A reason is required.`;
+      checked.forEach((checkbox) => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = "record_ids";
+        input.value = checkbox.value;
+        idsBox.appendChild(input);
+      });
+    } else {
+      document.getElementById("rejectModalText").textContent =
+        "Please give a reason. The submitter will see it.";
+    }
+  });
+  document.getElementById("rejectModalForm")?.addEventListener("submit", (event) => {
+    if (document.querySelectorAll("#rejectModalIds input").length === 0 &&
+        new URL(event.target.action, window.location.origin).pathname.endsWith("/bulk")) {
+      event.preventDefault();
+      document.getElementById("rejectModalWarning").classList.remove("d-none");
+    }
+  });
+
+  document.getElementById("viewModal")?.addEventListener("show.bs.modal", (event) => {
+    const data = event.relatedTarget?.dataset || {};
+    document.querySelectorAll("#viewModal [data-view]").forEach((cell) => {
+      const key = cell.dataset.view;
+      const map = { verifiedBy: "verifiedBy", verifiedAt: "verifiedAt" };
+      cell.textContent = data[key] ?? data[map[key]] ?? "—";
+    });
+  });
+</script>
+{% endblock %}

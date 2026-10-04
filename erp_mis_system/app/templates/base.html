@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
   {% block head %}{% endblock %}
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
   <nav class="navbar navbar-expand-lg navbar-light bg-white sticky-top border-bottom">
     <div class="container">
       <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ url_for('main.index') }}">
@@ -45,7 +45,7 @@
                 <li><a class="dropdown-item" href="{{ url_for('attendance.index') }}">Attendance</a></li>
                 <li><a class="dropdown-item" href="{{ url_for('attendance.create') }}">Daily attendance entry</a></li>
                 {% if current_user.role in ["admin", "manager"] %}
-                  <li><a class="dropdown-item" href="{{ url_for('attendance.index', verification_status='pending') }}">Attendance verification</a></li>
+                  <li><a class="dropdown-item" href="{{ url_for('attendance.index', view='verification') }}">Attendance verification</a></li>
                 {% endif %}
                 <li><hr class="dropdown-divider"></li>
                 <li><a class="dropdown-item" href="{{ url_for('employees.index') }}">Employees</a></li>
@@ -76,7 +76,7 @@
               <a class="nav-link d-none d-lg-inline" href="{{ url_for('reports.index') }}">Reports &amp; exports</a>
             {% endif %}
             <a class="nav-link d-none d-lg-inline" href="{{ url_for('auth.change_password') }}">Change password</a>
-            <span class="small text-secondary d-none d-md-inline">{{ current_user.full_name }}</span>
+            <span class="small text-secondary d-none d-md-inline"><a class="nav-link d-inline p-0" href="{{ url_for('auth.profile') }}">{{ current_user.full_name }}</a></span>
             <form method="post" action="{{ url_for('auth.logout') }}" class="m-0">
               <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn btn-outline-secondary btn-sm" type="submit">Log out</button>

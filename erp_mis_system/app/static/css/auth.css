@@ -1,0 +1,338 @@
+/* Shared auth theme for the login and register pages.
+ * Loaded via the head block in auth/login.html and auth/register.html,
+ * together with a small page-specific file (login.css / register.css).
+ * base.html, routes, validation logic, and form field names are untouched. */
+
+.auth-page {
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: #071622;
+}
+
+.auth-page > nav,
+.auth-page > footer {
+  display: none !important;
+}
+
+.auth-page main {
+  min-height: 100vh;
+}
+
+/* Hide the global fixed flash bar on auth pages; flashes render inside the card. */
+.auth-page .flash-container {
+  display: none !important;
+}
+
+.auth-screen {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  min-height: 100svh;
+  overflow: hidden;
+  padding: 2.5rem 1rem 4rem;
+  color: #fff;
+  background:
+    radial-gradient(ellipse at 92% 100%, rgba(0, 181, 143, 0.55), transparent 48%),
+    radial-gradient(ellipse at 4% 5%, rgba(74, 24, 109, 0.35), transparent 45%),
+    linear-gradient(135deg, #1b1040 0%, #0b1e3a 52%, #003b3a 100%);
+}
+
+/* Faint network/circuit dot-and-line pattern overlay (CSS only, no external assets). */
+.auth-screen::before,
+.auth-screen::after {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+}
+
+.auth-screen::before {
+  opacity: 0.36;
+  background-image:
+    radial-gradient(circle, rgba(61, 207, 190, 0.48) 1px, transparent 2px),
+    linear-gradient(130deg, transparent 49.85%, rgba(40, 195, 177, 0.12) 50%, transparent 50.15%),
+    linear-gradient(42deg, transparent 49.85%, rgba(40, 195, 177, 0.09) 50%, transparent 50.15%);
+  background-size: 92px 92px, 170px 170px, 210px 210px;
+  background-position: 4px 8px, 40px 12px, 0 65px;
+  mask-image: linear-gradient(90deg, #000, transparent 44%, transparent 58%, #000);
+}
+
+.auth-screen::after {
+  opacity: 0.23;
+  background:
+    radial-gradient(circle at 15% 34%, #8b23aa 0 3px, transparent 4px),
+    radial-gradient(circle at 21% 74%, #8b23aa 0 3px, transparent 4px),
+    radial-gradient(circle at 89% 18%, #1ed3bb 0 3px, transparent 4px),
+    radial-gradient(circle at 84% 66%, #1ed3bb 0 3px, transparent 4px),
+    radial-gradient(circle at 70% 83%, #1ed3bb 0 3px, transparent 4px);
+}
+
+/* Inline SVG network overlay sits above the CSS pattern, below content. */
+.auth-network {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.16;
+}
+
+/* margin:auto centers in the grid and stays scroll-accessible when the
+ * card is taller than the viewport (register page). */
+.auth-content {
+  margin: auto;
+}
+
+.auth-heading {
+  margin-bottom: 1.65rem;
+  text-align: center;
+}
+
+.auth-logo {
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  margin-bottom: 1rem;
+  border-radius: 13px;
+  color: #fff;
+  background: #08ad91;
+  box-shadow: 0 8px 24px rgba(0, 173, 145, 0.25);
+  font-size: 1.35rem;
+  font-weight: 750;
+}
+
+.auth-heading h1 {
+  margin: 0 0 0.35rem;
+  color: #fff;
+  font-size: 1.3rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.auth-heading p {
+  margin: 0;
+  color: rgba(234, 243, 249, 0.72);
+  font-size: 0.87rem;
+}
+
+.auth-card {
+  padding: 1.35rem 1.25rem 1.15rem;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  border-radius: 13px;
+  color: #15202b;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.3);
+}
+
+/* Flash / error messages styled inside the card. */
+.auth-flashes {
+  margin-bottom: 1rem;
+}
+
+.auth-flashes .alert {
+  margin-bottom: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+}
+
+.auth-flashes .alert:last-child {
+  margin-bottom: 0;
+}
+
+.auth-field {
+  margin-bottom: 1.05rem;
+}
+
+.auth-field .form-label {
+  margin-bottom: 0.4rem;
+  color: #26323e;
+  font-size: 0.78rem;
+  font-weight: 650;
+}
+
+.auth-card .form-control,
+.auth-card .form-select {
+  min-height: 43px;
+  padding: 0.65rem 0.8rem;
+  border-color: #e3e8ed;
+  border-radius: 10px;
+  background-color: #f1f4f6;
+  color: #1d2935;
+  font-size: 0.82rem;
+}
+
+.auth-card .form-control::placeholder {
+  color: #9aa4ae;
+}
+
+.auth-card .form-control:focus,
+.auth-card .form-select:focus {
+  border-color: #0bae92;
+  box-shadow: 0 0 0 0.2rem rgba(11, 174, 146, 0.14);
+  background-color: #fff;
+}
+
+.auth-card .form-text {
+  color: #697581;
+  font-size: 0.75rem;
+}
+
+.auth-card [data-strength-label] {
+  color: #56616b;
+}
+
+/* Password strength track. The bar color itself is set inline by
+ * validation.js: red (weak) / amber (medium) / teal-green (strong). */
+.auth-card .strength-track {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e6ebef;
+}
+
+.auth-card .strength-track span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.2s ease, background-color 0.2s ease;
+}
+
+.auth-password-wrap {
+  position: relative;
+}
+
+.auth-password-wrap .form-control {
+  padding-right: 2.8rem;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.55rem;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 7px;
+  color: #82909a;
+  background: transparent;
+}
+
+.auth-password-toggle:hover,
+.auth-password-toggle:focus-visible {
+  color: #087e6d;
+  background: #e9f7f4;
+}
+
+.auth-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0.15rem 0 1rem;
+}
+
+.auth-remember {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #56616b;
+  font-size: 0.78rem;
+}
+
+.auth-remember .form-check-input {
+  float: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border-color: #cbd5dc;
+}
+
+.auth-remember .form-check-input:checked {
+  border-color: #0baa8f;
+  background-color: #0baa8f;
+}
+
+.auth-help-text {
+  color: #087e6d;
+  font-size: 0.72rem;
+  text-align: right;
+}
+
+.auth-submit {
+  width: 100%;
+  min-height: 42px;
+  border: 0;
+  border-radius: 10px;
+  color: #fff;
+  background: #0bab8e;
+  font-size: 0.83rem;
+  font-weight: 700;
+}
+
+.auth-submit:hover,
+.auth-submit:focus-visible {
+  color: #fff;
+  background: #078a75;
+}
+
+.auth-alt {
+  margin-top: 1.1rem;
+  color: #697581;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.auth-alt a {
+  color: #078a75;
+  font-weight: 650;
+  text-decoration: none;
+}
+
+.auth-alt a:hover {
+  text-decoration: underline;
+}
+
+.auth-secure {
+  margin: 1.2rem 0 0;
+  color: rgba(226, 239, 244, 0.68);
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.auth-secure i {
+  margin-right: 0.25rem;
+  color: #5ad6bd;
+}
+
+.auth-footer {
+  position: absolute;
+  right: 1rem;
+  bottom: 1.15rem;
+  left: 1rem;
+  color: rgba(225, 237, 243, 0.55);
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+@media (max-width: 767.98px) {
+  .auth-screen {
+    padding: 2rem 1rem 4rem;
+  }
+
+  .auth-card {
+    padding: 1.25rem 1.05rem 1.05rem;
+  }
+
+  .auth-options {
+    flex-wrap: wrap;
+  }
+}

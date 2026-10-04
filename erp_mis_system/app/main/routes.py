@@ -93,7 +93,7 @@ def department_data():
 @main_bp.route("/workspace/records/verify")
 @roles_required("admin", "manager")
 def verify_records():
-    return redirect(url_for("attendance.index", verification_status="pending"))
+    return redirect(url_for("attendance.index", view="verification"))
 
 
 @main_bp.route("/workspace/reports")

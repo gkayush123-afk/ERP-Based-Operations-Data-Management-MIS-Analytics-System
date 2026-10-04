@@ -1,0 +1,66 @@
+{% extends "layout_app.html" %}
+{% block title %}Fix Record{% endblock %}
+{% block app_content %}
+<div class="verification-content" style="max-width: 640px; margin-inline: auto;">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('verification.index') }}">Verification</a><i class="bi bi-chevron-right"></i><span>Fix record #{{ record.id }}</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-pencil-square"></i></span>
+      <div><h1>Fix and resubmit</h1><p>Correct record #{{ record.id }} ({{ record.employee.employee_code }}) and send it back for review.</p></div>
+    </div>
+  </div>
+
+  <section class="verification-records">
+    <div class="verification-records-heading">
+      <h2><i class="bi bi-list-ul"></i> Record details</h2>
+    </div>
+    <div style="padding: 0.75rem;">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="auth-flashes" style="margin-bottom: 1rem;">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      {% if record.correction_note %}
+      <div class="alert alert-info" role="note"><strong>Correction requested:</strong> {{ record.correction_note }}</div>
+      {% endif %}
+      <form method="post" action="{{ url_for('verification.edit', record_id=record.id) }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="verification-filter-field" style="margin-bottom: 0.75rem;">
+          <label for="task_operation">Task / Operation</label>
+          <input class="form-control" id="task_operation" name="task_operation" type="text" maxlength="200" required value="{{ request.form.get('task_operation', record.task_operation) }}">
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.6rem; margin-bottom: 0.75rem;">
+          <div class="verification-filter-field">
+            <label for="total_records">Total Records</label>
+            <input class="form-control" id="total_records" name="total_records" type="number" min="0" required value="{{ request.form.get('total_records', record.total_records) }}">
+          </div>
+          <div class="verification-filter-field">
+            <label for="completed">Completed</label>
+            <input class="form-control" id="completed" name="completed" type="number" min="0" required value="{{ request.form.get('completed', record.completed) }}">
+          </div>
+          <div class="verification-filter-field">
+            <label for="pending">Pending</label>
+            <input class="form-control" id="pending" name="pending" type="number" min="0" required value="{{ request.form.get('pending', record.pending) }}">
+          </div>
+        </div>
+        <div class="verification-filter-field" style="margin-bottom: 1rem;">
+          <label for="remarks">Remarks</label>
+          <textarea class="form-control" id="remarks" name="remarks" rows="2" maxlength="1000" placeholder="Optional note">{{ request.form.get('remarks', record.remarks or '') }}</textarea>
+        </div>
+        <div class="verification-filter-actions" style="justify-content: flex-end;">
+          <a class="btn btn-outline-secondary" href="{{ url_for('verification.index') }}">Cancel</a>
+          <button class="btn btn-primary" type="submit"><i class="bi bi-check-lg"></i><span>Save and resubmit</span></button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block footer %}{% endblock %}

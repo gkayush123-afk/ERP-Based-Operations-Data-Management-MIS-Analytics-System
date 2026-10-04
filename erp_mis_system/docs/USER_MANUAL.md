@@ -2,7 +2,7 @@
 
 ## Sign in and common navigation
 
-1. Open the company-provided HTTPS address and enter the username/password issued to you.
+1. Open the company-provided HTTPS address and enter the username or email address and password issued to you.
 2. Registration requests remain pending until an administrator approves them. Contact the administrator if you cannot sign in or your account is deactivated.
 3. Use the top navigation to open Dashboard, Records, Departments, Data Quality (authorized roles), Reports (authorized roles), or account settings.
 4. Sign out using **Log out**. The system also ends an inactive session after 30 minutes.

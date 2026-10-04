@@ -11,11 +11,20 @@
 
   <div class="row g-3 mt-3">
     <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('employees.index') }}"><i class="bi bi-people"></i><span><strong>{{ metrics.total_employees }} active employees</strong><small>In your reporting scope</small></span></a></div>
-    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.index', attendance_date=today) }}"><i class="bi bi-calendar-check"></i><span><strong>{{ metrics.today_attendance_total }} attendance entries</strong><small>Today · {{ metrics.today_attendance.present }} present</small></span></a></div>
-    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.index', verification_status='pending') }}"><i class="bi bi-hourglass-split"></i><span><strong>{{ metrics.pending_verifications }} pending verifications</strong><small>Awaiting review in your scope</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.index', attendance_date=today) }}"><i class="bi bi-calendar-check"></i><span><strong>{{ metrics.today_attendance_total }} attendance entries</strong><small>Today · {{ metrics.today_attendance.present }} present · {{ metrics.today_attendance.get('absent', 0) }} absent · {{ metrics.today_attendance.get('late', 0) }} late</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.index', view='verification', verification_status='pending') }}"><i class="bi bi-hourglass-split"></i><span><strong>{{ metrics.pending_verifications }} pending verifications</strong><small>Awaiting review in your scope</small></span></a></div>
     {% if current_user.role in ["admin", "manager"] %}
       <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('data_quality.index') }}"><i class="bi bi-clipboard2-pulse"></i><span><strong>{{ data_quality_count or 0 }} data issues</strong><small>Detected today</small></span></a></div>
     {% endif %}
+  </div>
+
+  <div class="row g-3 mt-3">
+    {% set ops = metrics.get('operation_totals') or {} %}
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('verification.index') }}"><i class="bi bi-database"></i><span><strong>{{ ops.get('total', 0) }} total operations</strong><small>Submitted for verification</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('verification.index', status='verified') }}"><i class="bi bi-check2-circle"></i><span><strong>{{ ops.get('verified', 0) }} verified</strong><small>Operations approved</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('verification.index', status='pending') }}"><i class="bi bi-hourglass-split"></i><span><strong>{{ ops.get('pending', 0) }} pending</strong><small>Operations awaiting review</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('verification.index', status='rejected') }}"><i class="bi bi-x-circle"></i><span><strong>{{ ops.get('rejected', 0) }} rejected</strong><small>Operations sent back</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('verification.index', status='needs_correction') }}"><i class="bi bi-pencil-square"></i><span><strong>{{ ops.get('needs_correction', 0) }} need correction</strong><small>Operations sent back to fix</small></span></a></div>
   </div>
 
   {% set monthly_sales = metrics.get("monthly_sales") %}
@@ -70,6 +79,25 @@
     </div></div>
   </div>
 
+  <div class="row g-4 mt-1">
+    <div class="col-lg-7"><div class="info-panel h-100"><h2 class="h5 mb-3">Monthly operations</h2><div style="height: 300px"><canvas id="operations-chart" aria-label="Monthly operations trend" role="img"></canvas></div></div></div>
+    <div class="col-lg-5"><div class="info-panel h-100"><h2 class="h5 mb-3">Recent activities</h2>
+      {% set activities = metrics.get('recent_activities') or [] %}
+      {% if activities %}
+        <ul class="list-unstyled mb-0 d-grid gap-3">
+          {% for item in activities %}
+            <li class="d-flex gap-2">
+              <i class="bi bi-dot text-secondary"></i>
+              <div><strong>{{ item.actor }}</strong> {{ item.label }} <span class="text-secondary">{{ item.target }}</span><small class="d-block text-secondary">{{ item.when }}</small></div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-secondary mb-0">No recent activity.</p>
+      {% endif %}
+    </div></div>
+  </div>
+
   <div class="row g-3 mt-3">
     <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('employees.index') }}"><i class="bi bi-person-vcard"></i><span><strong>Employees</strong><small>Browse employee records</small></span></a></div>
     <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.index') }}"><i class="bi bi-calendar2-week"></i><span><strong>Attendance</strong><small>View attendance records</small></span></a></div>
@@ -110,8 +138,8 @@
 {% block scripts %}
 <script>
   (() => {
-    const statusNames = {present: "Present", absent: "Absent", leave: "Leave", half_day: "Half-day"};
-    const statusColors = {present: "#198754", absent: "#dc3545", leave: "#0d6efd", half_day: "#ffc107"};
+    const statusNames = {present: "Present", absent: "Absent", late: "Late", leave: "Leave", half_day: "Half-day"};
+    const statusColors = {present: "#198754", absent: "#dc3545", late: "#fd7e14", leave: "#0d6efd", half_day: "#ffc107"};
     const departmentCanvas = document.getElementById("department-chart");
     if (departmentCanvas) {
       const departmentSeries = {{ metrics.department_series|tojson }};
@@ -133,6 +161,17 @@
         datasets: Object.entries({{ metrics.trend_series|tojson }}).map(([key, values]) => ({
           label: statusNames[key], data: values, borderColor: statusColors[key], backgroundColor: statusColors[key], tension: 0.25
         }))
+      },
+      options: {responsive: true, maintainAspectRatio: false, scales: {y: {beginAtZero: true, ticks: {precision: 0}}}, plugins: {legend: {position: "bottom"}}}
+    });
+    new Chart(document.getElementById("operations-chart"), {
+      type: "bar",
+      data: {
+        labels: {{ (metrics.get('operations_monthly') or {}).get('labels', [])|tojson }},
+        datasets: [
+          {label: "Verified", data: {{ (metrics.get('operations_monthly') or {}).get('verified', [])|tojson }}, backgroundColor: "#168267"},
+          {label: "Total", data: {{ (metrics.get('operations_monthly') or {}).get('total', [])|tojson }}, type: "line", borderColor: "#2764e7", backgroundColor: "#2764e7", tension: 0.25}
+        ]
       },
       options: {responsive: true, maintainAspectRatio: false, scales: {y: {beginAtZero: true, ticks: {precision: 0}}}, plugins: {legend: {position: "bottom"}}}
     });

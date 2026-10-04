@@ -361,3 +361,61 @@ def test_data_entry_employee_import_forces_own_department(client, app):
         )
         assert employee.department_id == 1
         assert employee.department_id != second_department_id
+
+
+def _employee_id(app, code):
+    with app.app_context():
+        return db.session.scalar(db.select(Employee.id).where(Employee.employee_code == code))
+
+
+def test_employee_show_renders_details_and_links(client, app):
+    add_user(app, "show_admin", "admin", 1)
+    authenticated_as(client, app, "show_admin")
+    create_employee(client, "SHOW001")
+    employee_id = _employee_id(app, "SHOW001")
+
+    response = client.get(f"/employees/{employee_id}")
+    assert response.status_code == 200
+    for marker in (
+        b"SHOW001",
+        b"Analyst",
+        b"Attendance history",
+        b"Verification records",
+        b"Recent attendance",
+        b"Operation records",
+        b"Edit",
+        b"Delete",
+    ):
+        assert marker in response.data
+
+    response = client.get("/employees/")
+    assert f"/employees/{employee_id}".encode() in response.data
+
+
+def test_employee_show_scoping_and_deleted(client, app):
+    operations_id = add_department(app, "Show Operations")
+    add_user(app, "show_manager", "manager", operations_id)
+    add_user(app, "show_staff", "data_entry", operations_id)
+    add_user(app, "show_admin2", "admin", 1)
+    authenticated_as(client, app, "show_admin2")
+    create_employee(client, "SHOW002")
+    other_id = _employee_id(app, "SHOW002")
+    own_id = None
+    authenticated_as(client, app, "show_staff")
+    create_employee(client, "SHOW003")
+    with app.app_context():
+        own = db.session.scalar(db.select(Employee).where(Employee.employee_code == "SHOW003"))
+        assert own.department_id == operations_id
+        own_id = own.id
+
+    authenticated_as(client, app, "show_manager")
+    assert client.get(f"/employees/{other_id}").status_code == 403
+    assert client.get(f"/employees/{own_id}").status_code == 200
+
+    authenticated_as(client, app, "show_staff")
+    assert client.get(f"/employees/{own_id}").status_code == 200
+    assert b"Verification records" not in client.get(f"/employees/{own_id}").data
+
+    authenticated_as(client, app, "show_admin2")
+    assert client.post(f"/employees/{own_id}/delete", follow_redirects=True).status_code == 200
+    assert client.get(f"/employees/{own_id}").status_code == 404

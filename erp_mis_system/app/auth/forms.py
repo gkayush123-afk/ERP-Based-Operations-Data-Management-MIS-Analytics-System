@@ -28,8 +28,8 @@ def validate_password_strength(_form, field):
 
 class LoginForm(FlaskForm):
     username = StringField(
-        "Username",
-        validators=[DataRequired(message="Enter your username."), Length(max=80)],
+        "Username / Email",
+        validators=[DataRequired(message="Enter your username or email."), Length(max=254)],
     )
     password = PasswordField(
         "Password",
@@ -45,10 +45,10 @@ class RegistrationForm(FlaskForm):
         validators=[DataRequired(message="Enter your full name."), Length(max=160)],
     )
     username = StringField(
-        "Username",
+        "Employee ID",
         validators=[
-            DataRequired(message="Choose a username."),
-            Length(min=3, max=80, message="Username must be 3 to 80 characters."),
+            DataRequired(message="Enter your employee ID."),
+            Length(min=3, max=80, message="Employee ID must be 3 to 80 characters."),
             Regexp(
                 r"^[A-Za-z0-9_.-]+$",
                 message="Use only letters, numbers, periods, underscores, and hyphens.",
@@ -67,6 +67,12 @@ class RegistrationForm(FlaskForm):
         "Department",
         coerce=int,
         validators=[DataRequired(message="Choose a department.")],
+    )
+    role = SelectField(
+        "Role",
+        choices=[("data_entry", "Data Entry Staff"), ("manager", "Manager")],
+        default="data_entry",
+        validators=[DataRequired(message="Choose a role.")],
     )
     password = PasswordField(
         "Password",

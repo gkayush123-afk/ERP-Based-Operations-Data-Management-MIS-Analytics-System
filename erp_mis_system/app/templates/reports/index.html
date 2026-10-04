@@ -4,7 +4,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 {% endblock %}
 {% block content %}
-{% set report_titles = {"daily": "Daily report", "weekly": "Weekly report", "monthly": "Monthly report", "department": "Department-wise summary"} %}
+{% set report_titles = {"daily": "Daily report", "weekly": "Weekly report", "monthly": "Monthly report", "department": "Department-wise summary", "summary": "Attendance summary"} %}
 <section class="dashboard-section"><div class="container py-5">
   <div class="mb-4">
     <span class="eyebrow">Management information system</span>
@@ -17,7 +17,7 @@
       <div class="col-md-3">
         <label class="form-label fw-semibold" for="type">Report</label>
         <select class="form-select" id="type" name="type">
-          {% for value, label in [("daily", "Daily"), ("weekly", "Weekly"), ("monthly", "Monthly"), ("department", "Department-wise summary")] %}
+          {% for value, label in [("daily", "Daily"), ("weekly", "Weekly"), ("monthly", "Monthly"), ("department", "Department-wise summary"), ("summary", "Attendance Summary")] %}
             <option value="{{ value }}" {% if filters.type == value %}selected{% endif %}>{{ label }}</option>
           {% endfor %}
         </select>
@@ -30,11 +30,11 @@
         <label class="form-label fw-semibold" for="month">Month</label>
         <input class="form-control" id="month" name="month" type="month" value="{{ filters.period_month.strftime('%Y-%m') }}">
       </div>
-      <div class="col-md-3 period-field" data-for="department">
+      <div class="col-md-3 period-field" data-for="department,summary">
         <label class="form-label fw-semibold" for="start_date">From</label>
         <input class="form-control" id="start_date" name="start_date" type="date" value="{{ filters.start_date.isoformat() }}">
       </div>
-      <div class="col-md-3 period-field" data-for="department">
+      <div class="col-md-3 period-field" data-for="department,summary">
         <label class="form-label fw-semibold" for="end_date">To</label>
         <input class="form-control" id="end_date" name="end_date" type="date" value="{{ filters.end_date.isoformat() }}">
       </div>
@@ -82,18 +82,22 @@
     <div class="table-responsive"><table class="table table-hover align-middle mb-0">
       <thead><tr>
         {% if filters.type == "department" %}
-          <th>Department</th><th class="text-end">Present</th><th class="text-end">Absent</th><th class="text-end">Leave</th><th class="text-end">Half-day</th><th class="text-end">Active employees</th><th class="text-end">Attendance %</th>
+          <th>Department</th><th class="text-end">Present</th><th class="text-end">Absent</th><th class="text-end">Late</th><th class="text-end">Leave</th><th class="text-end">Half-day</th><th class="text-end">Active employees</th><th class="text-end">Attendance %</th>
+        {% elif filters.type == "summary" %}
+          <th>Department</th><th>Employee ID</th><th>Employee Name</th><th class="text-end">Present</th><th class="text-end">Absent</th><th class="text-end">Late</th><th class="text-end">Leave</th><th class="text-end">Half-day</th><th class="text-end">Total</th><th class="text-end">Attendance %</th>
         {% else %}
-          <th>Date</th><th>Department</th><th class="text-end">Present</th><th class="text-end">Absent</th><th class="text-end">Leave</th><th class="text-end">Half-day</th>
+          <th>Date</th><th>Department</th><th class="text-end">Present</th><th class="text-end">Absent</th><th class="text-end">Late</th><th class="text-end">Leave</th><th class="text-end">Half-day</th>
         {% endif %}
       </tr></thead>
       <tbody>
       {% for row in rows %}
         <tr>
           {% if filters.type == "department" %}
-            <td>{{ row.department }}</td><td class="text-end">{{ row.present }}</td><td class="text-end">{{ row.absent }}</td><td class="text-end">{{ row.leave }}</td><td class="text-end">{{ row.half_day }}</td><td class="text-end">{{ row.active_employees }}</td><td class="text-end">{{ "%.2f"|format(row.attendance_percentage) }}%</td>
+            <td>{{ row.department }}</td><td class="text-end">{{ row.present }}</td><td class="text-end">{{ row.absent }}</td><td class="text-end">{{ row.late }}</td><td class="text-end">{{ row.leave }}</td><td class="text-end">{{ row.half_day }}</td><td class="text-end">{{ row.active_employees }}</td><td class="text-end">{{ "%.2f"|format(row.attendance_percentage) }}%</td>
+          {% elif filters.type == "summary" %}
+            <td>{{ row.department }}</td><td>{{ row.employee_code }}</td><td>{{ row.employee_name }}</td><td class="text-end">{{ row.present }}</td><td class="text-end">{{ row.absent }}</td><td class="text-end">{{ row.late }}</td><td class="text-end">{{ row.leave }}</td><td class="text-end">{{ row.half_day }}</td><td class="text-end">{{ row.total }}</td><td class="text-end">{{ "%.2f"|format(row.attendance_percentage) }}%</td>
           {% else %}
-            <td>{{ row.date }}</td><td>{{ row.department }}</td><td class="text-end">{{ row.present }}</td><td class="text-end">{{ row.absent }}</td><td class="text-end">{{ row.leave }}</td><td class="text-end">{{ row.half_day }}</td>
+            <td>{{ row.date }}</td><td>{{ row.department }}</td><td class="text-end">{{ row.present }}</td><td class="text-end">{{ row.absent }}</td><td class="text-end">{{ row.late }}</td><td class="text-end">{{ row.leave }}</td><td class="text-end">{{ row.half_day }}</td>
           {% endif %}
         </tr>
       {% else %}
@@ -102,6 +106,7 @@
       </tbody>
     </table></div>
     {% if filters.type == "department" %}<p class="small text-secondary mt-3 mb-0">Attendance percentage = present records ÷ (active employees with a joining date on or before the period end × calendar days in the selected period).{% if filters.status %} Percentage is calculated across all attendance statuses, regardless of the status-count filter.{% endif %}</p>{% endif %}
+    {% if filters.type == "summary" %}<p class="small text-secondary mt-3 mb-0">Attendance percentage = present records ÷ all records in the selected period for that employee.</p>{% endif %}
   </div>
 </div></section>
 {% endblock %}
@@ -122,8 +127,8 @@
     if (!canvas) return;
     const labels = {{ chart.labels|tojson }};
     const series = {{ chart.series|tojson }};
-    const names = {present: "Present", absent: "Absent", leave: "Leave", half_day: "Half-day"};
-    const colors = {present: "#198754", absent: "#dc3545", leave: "#0d6efd", half_day: "#ffc107"};
+    const names = {present: "Present", absent: "Absent", late: "Late", leave: "Leave", half_day: "Half-day"};
+    const colors = {present: "#198754", absent: "#dc3545", late: "#fd7e14", leave: "#0d6efd", half_day: "#ffc107"};
     const isTimeline = {{ (filters.type in ["weekly", "monthly"])|tojson }};
     const datasets = Object.entries(series).map(([key, values]) => ({
       label: names[key],

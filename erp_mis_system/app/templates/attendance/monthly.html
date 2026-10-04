@@ -1,0 +1,72 @@
+{% extends "layout_app.html" %}
+{% block title %}Monthly Attendance{% endblock %}
+{% block app_content %}
+<div class="verification-content verification-content-wide">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('attendance.index') }}">Attendance</a><i class="bi bi-chevron-right"></i><span>Monthly Overview</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-calendar3"></i></span>
+      <div><h1>Monthly Overview</h1><p>Attendance summary per employee for {{ month_label }}.</p></div>
+    </div>
+  </div>
+
+  <form class="verification-filter" method="get" action="{{ url_for('attendance.monthly') }}">
+    <div class="verification-filter-field">
+      <label for="month">Month</label>
+      <input class="form-control" id="month" name="month" type="month" value="{{ month }}" onchange="this.form.submit()">
+    </div>
+    {% if departments|length > 1 %}
+    <div class="verification-filter-field">
+      <label for="department_id">Department</label>
+      <select class="form-select" id="department_id" name="department_id" onchange="this.form.submit()">
+        <option value="">All departments</option>
+        {% for department in departments %}
+          <option value="{{ department.id }}" {% if department_id == department.id %}selected{% endif %}>{{ department.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div class="verification-filter-actions">
+      <a class="btn btn-outline-secondary" href="{{ url_for('attendance.monthly') }}"><i class="bi bi-arrow-counterclockwise"></i><span>Reset</span></a>
+    </div>
+  </form>
+
+  <section class="verification-records">
+    <div class="verification-records-heading">
+      <h2><i class="bi bi-list-ul"></i> {{ month_label }}</h2>
+    </div>
+    <div class="table-responsive">
+      <table class="table verification-table align-middle mb-0">
+        <thead><tr>
+          <th>Employee ID</th><th>Employee Name</th><th>Department</th>
+          <th class="num">Present</th><th class="num">Absent</th><th class="num">Late</th>
+          <th class="num">Leave</th><th class="num">Half-day</th><th class="num">Total</th><th class="num">Attendance %</th><th>History</th>
+        </tr></thead>
+        <tbody>
+        {% for row in rows %}
+          <tr>
+            <td><strong>{{ row.employee.employee_code }}</strong></td>
+            <td>{{ row.employee.full_name }}</td>
+            <td>{{ row.employee.department.name }}</td>
+            <td class="num">{{ row.present }}</td>
+            <td class="num">{{ row.absent }}</td>
+            <td class="num">{{ row.late }}</td>
+            <td class="num">{{ row.leave }}</td>
+            <td class="num">{{ row.half_day }}</td>
+            <td class="num">{{ row.total }}</td>
+            <td class="num">{{ row.attendance_percentage }}%</td>
+            <td><a class="verification-action action-view" href="{{ url_for('attendance.employee_history', employee_id=row.employee.id, month=month) }}" aria-label="View history"><i class="bi bi-calendar2-week"></i></a></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="12" class="verification-empty">No employees found.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="verification-table-footer">
+      <span>{{ rows|length }} employee(s) · {{ month_label }}</span>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block footer %}{% endblock %}

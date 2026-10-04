@@ -3,7 +3,7 @@ from app.models import AuditLog, User
 from app.config import DevelopmentConfig, ProductionConfig
 
 
-def register(client, username="newuser", email="newuser@example.com"):
+def register(client, username="newuser", email="newuser@example.com", role="data_entry"):
     return client.post(
         "/register",
         data={
@@ -11,6 +11,7 @@ def register(client, username="newuser", email="newuser@example.com"):
             "username": username,
             "email": email,
             "department_id": "1",
+            "role": role,
             "password": "Strong-Pass-123",
             "confirm_password": "Strong-Pass-123",
         },
@@ -71,6 +72,17 @@ def test_admin_can_approve_registration_and_user_can_log_in(client, app):
     assert b"Welcome, New User" in response.data
 
 
+def test_user_can_log_in_with_email_address(client, app):
+    register(client)
+    login(client, "admin", "Admin-Pass-1234!")
+    client.post("/admin/approvals/2/approve", follow_redirects=True)
+    client.post("/logout", follow_redirects=True)
+
+    response = login(client, "newuser@example.com", "Strong-Pass-123")
+
+    assert b"Welcome, New User" in response.data
+
+
 def test_fifth_failed_password_attempt_locks_account(client, app):
     register(client)
     login(client, "admin", "Admin-Pass-1234!")
@@ -111,6 +123,7 @@ def test_registration_displays_field_validation_and_duplicate_errors(client, app
             "username": "bad username",
             "email": "not-an-email",
             "department_id": "1",
+            "role": "data_entry",
             "password": "weak",
             "confirm_password": "different",
         },
@@ -124,7 +137,34 @@ def test_registration_displays_field_validation_and_duplicate_errors(client, app
 
     register(client, username="duplicate_user", email="first@example.com")
     response = register(client, username="duplicate_user", email="second@example.com")
-    assert b"That username is already in use." in response.data
+    assert b"That employee ID is already in use." in response.data
+
+
+def test_registration_role_request_and_admin_rejected(client, app):
+    response = register(client, username="manager_request", email="manager@example.com", role="manager")
+    assert b"Your account is waiting for admin approval." in response.data
+    with app.app_context():
+        user = db.session.scalar(db.select(User).where(User.username == "manager_request"))
+        assert user is not None
+        assert user.role == "manager"
+        assert user.status == "pending"
+
+    response = client.post(
+        "/register",
+        data={
+            "full_name": "Sneaky Admin",
+            "username": "sneaky_admin",
+            "email": "sneaky@example.com",
+            "department_id": "1",
+            "role": "admin",
+            "password": "Strong-Pass-123",
+            "confirm_password": "Strong-Pass-123",
+        },
+        follow_redirects=True,
+    )
+    assert b"Your account is waiting for admin approval." not in response.data
+    with app.app_context():
+        assert db.session.scalar(db.select(User).where(User.username == "sneaky_admin")) is None
 
 
 def test_development_debug_is_explicit_and_production_stays_disabled():
@@ -132,3 +172,22 @@ def test_development_debug_is_explicit_and_production_stays_disabled():
     assert DevelopmentConfig.ALLOW_DEBUG is True
     assert ProductionConfig.DEBUG is False
     assert ProductionConfig.ALLOW_DEBUG is False
+
+
+def test_profile_requires_login_and_shows_own_data_with_activity(client, app):
+    response = client.get("/profile")
+    assert response.status_code == 302
+    assert "/login" in response.headers["Location"]
+
+    login(client, "admin", "Admin-Pass-1234!")
+    response = client.get("/profile")
+    assert response.status_code == 200
+    for marker in (
+        b"Test Administrator",
+        b"admin@example.test",
+        b"Administrator",
+        b"Change password",
+        b"Recent activity",
+        b"auth.login",
+    ):
+        assert marker in response.data

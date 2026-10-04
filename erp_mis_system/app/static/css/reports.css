@@ -1,0 +1,176 @@
+/* MIS Reports (operations) page extras. Sidebar/topbar/stats/filter/table look
+ * comes from the shared .verification-* rules in style.css. */
+
+.mis-topbar-search {
+  display: flex;
+  flex: 1 1 auto;
+  max-width: 420px;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 auto;
+  padding: 0.4rem 0.75rem;
+  border: 1px solid #e0e9f3;
+  border-radius: 8px;
+  background: #f6fafd;
+  color: #7b8da1;
+}
+
+.mis-topbar-search input[type="search"] {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #304a65;
+  font-size: 0.75rem;
+  outline: none;
+}
+
+.mis-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mis-stats .mis-stat {
+  flex-wrap: wrap;
+  row-gap: 0.35rem;
+}
+
+.mis-trend {
+  flex-basis: 100%;
+  font-size: 0.62rem;
+  font-weight: 650;
+}
+
+.trend-good {
+  color: #08724e;
+}
+
+.trend-bad {
+  color: #b5323c;
+}
+
+.mis-charts {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 0.65rem;
+  margin-bottom: 0.7rem;
+}
+
+.mis-chart-card {
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid #e5edf6;
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: 0 2px 7px rgba(34, 72, 114, 0.035);
+}
+
+.mis-chart-card h2 {
+  margin: 0 0 0.6rem;
+  color: #26445f;
+  font-size: 0.78rem;
+  font-weight: 720;
+}
+
+.mis-chart-body {
+  position: relative;
+  height: 260px;
+}
+
+.mis-chart-placeholder {
+  display: grid;
+  place-items: center;
+  gap: 0.25rem;
+  padding: 2.5rem 1rem;
+  color: #8299b1;
+  text-align: center;
+}
+
+.mis-chart-placeholder i {
+  font-size: 1.8rem;
+}
+
+.mis-chart-placeholder p {
+  margin: 0;
+  font-size: 0.72rem;
+}
+
+.donut-wrap {
+  position: relative;
+  height: 190px;
+}
+
+.donut-center {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+
+.donut-center strong,
+.donut-center small {
+  display: block;
+  line-height: 1.2;
+}
+
+.donut-center strong {
+  color: #173957;
+  font-size: 1.3rem;
+}
+
+.donut-center small {
+  color: #7b8da1;
+  font-size: 0.62rem;
+}
+
+.donut-legend {
+  display: grid;
+  gap: 0.3rem;
+  margin: 0.6rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.donut-legend li {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #405a75;
+  font-size: 0.66rem;
+}
+
+.donut-legend li i {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 10px;
+  border-radius: 3px;
+}
+
+.donut-numbers {
+  margin-left: auto;
+  color: #627993;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+@media (max-width: 1100px) {
+  .mis-charts {
+    grid-template-columns: 1fr;
+  }
+
+  .mis-chart-body {
+    height: 240px;
+  }
+}
+
+@media (max-width: 767.98px) {
+  .mis-topbar-search {
+    order: 3;
+    flex-basis: 100%;
+    max-width: none;
+  }
+}

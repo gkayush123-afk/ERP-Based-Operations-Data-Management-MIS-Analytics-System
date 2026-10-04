@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+<section class="dashboard-section"><div class="container py-5" style="max-width: 860px;">
+  <div class="info-panel mb-4">
+    <div class="d-flex flex-wrap align-items-center gap-3">
+      <span class="auth-mark" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+      <div class="me-auto">
+        <h1 class="h3 mb-1">{{ current_user.full_name }}</h1>
+        <p class="text-secondary mb-0">{{ current_user.username }} · {{ current_user.role|replace("_", " ")|title }}</p>
+      </div>
+      <span class="badge {% if current_user.status == 'active' %}text-bg-success{% else %}text-bg-warning{% endif %}">{{ current_user.status|title }}</span>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('auth.change_password') }}">Change password</a>
+        <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('main.dashboard') }}">Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6"><div class="info-panel h-100">
+      <h2 class="h5 mb-3">Account details</h2>
+      <dl class="row mb-0">
+        <dt class="col-sm-4 text-secondary">Employee ID</dt><dd class="col-sm-8">{{ current_user.username }}</dd>
+        <dt class="col-sm-4 text-secondary">Email</dt><dd class="col-sm-8">{{ current_user.email }}</dd>
+        <dt class="col-sm-4 text-secondary">Department</dt><dd class="col-sm-8">{{ current_user.department.name if current_user.department else "—" }}</dd>
+        <dt class="col-sm-4 text-secondary">Role</dt><dd class="col-sm-8">{{ current_user.role|replace("_", " ")|title }}</dd>
+        <dt class="col-sm-4 text-secondary">Member since</dt><dd class="col-sm-8">{{ current_user.created_at.strftime("%Y-%m-%d") }}</dd>
+      </dl>
+    </div></div>
+    <div class="col-lg-6"><div class="info-panel h-100">
+      <h2 class="h5 mb-3">Recent activity</h2>
+      {% if activities %}
+        <ul class="list-unstyled mb-0 d-grid gap-2">
+          {% for entry in activities %}
+            <li class="d-flex gap-2">
+              <i class="bi bi-dot text-secondary"></i>
+              <div><code>{{ entry.action }}</code> <span class="text-secondary">{{ entry.entity }}{% if entry.entity_id %} #{{ entry.entity_id }}{% endif %}</span><small class="d-block text-secondary">{{ entry.occurred_at.strftime("%d %b %H:%M") }} UTC</small></div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-secondary mb-0">No recent activity.</p>
+      {% endif %}
+    </div></div>
+  </div>
+</div></section>
+{% endblock %}

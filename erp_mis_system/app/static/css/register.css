@@ -1,0 +1,90 @@
+/* Register-specific styles. Shared auth theme lives in auth.css. */
+
+/* Single shared centered container for logo, heading, card and footer
+ * text: flex column with centered cross-axis so every block shares the
+ * same center line regardless of grid-track behavior. */
+.register-content {
+  width: 100%;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Keep a single in-flow grid item (same as login) so the content stays
+ * centered: the screen grows with the tall card and the absolute footer
+ * sits in the reserved bottom padding instead of forming a second row. */
+.register-page .auth-screen {
+  justify-content: center;
+  padding-top: 28px;
+}
+
+.register-page .auth-heading {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.register-page .auth-heading h1 {
+  font-size: 1.5rem;
+}
+
+.register-page .auth-heading p {
+  font-size: 0.875rem;
+}
+
+.register-page .auth-card {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 28px 32px;
+}
+
+/* The Bootstrap row gutters (g-3 = 16px) provide the vertical rhythm,
+ * so field wrappers carry no extra bottom margin here. */
+.register-page .auth-field {
+  margin-bottom: 0;
+}
+
+.register-page .auth-field .form-label {
+  margin-bottom: 6px;
+}
+
+.register-page .auth-card .form-control,
+.register-page .auth-card .form-select {
+  height: 44px;
+  font-size: 0.9rem;
+}
+
+.register-page .auth-card .strength-track {
+  height: 4px;
+  margin-top: 6px;
+}
+
+.register-page .auth-card .form-text {
+  font-size: 12px;
+}
+
+.register-page .auth-submit {
+  min-height: 46px;
+  margin-top: 16px;
+}
+
+.register-page .auth-alt {
+  margin-top: 16px;
+}
+
+.register-page .auth-secure {
+  width: 100%;
+  margin-top: 16px;
+}
+
+@media (max-width: 767.98px) {
+  .register-page .auth-screen {
+    padding: 2rem 1rem 3rem;
+  }
+
+  .register-page .auth-card {
+    padding: 1.25rem 1.05rem 1.05rem;
+  }
+}

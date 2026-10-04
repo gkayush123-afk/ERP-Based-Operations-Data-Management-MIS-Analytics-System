@@ -1,5 +1,5 @@
 import time
-from datetime import date, timedelta
+from datetime import date, time as datetime_time, timedelta
 from io import BytesIO
 
 from openpyxl import Workbook
@@ -180,6 +180,55 @@ def test_manager_verifies_or_rejects_only_own_department_records(client, app):
         )
 
 
+def test_verification_dashboard_shows_summary_and_keeps_action_in_view(client, app):
+    authenticate_as(client, app, "admin")
+    employee_id = add_employee(app, "VERIFY001")
+    today = date.today()
+    with app.app_context():
+        admin_id = db.session.scalar(db.select(User.id).where(User.username == "admin"))
+        for offset, verification_status in enumerate(("pending", "verified", "rejected")):
+            record = AttendanceRecord(
+                employee_id=employee_id,
+                attendance_date=today - timedelta(days=offset),
+                status="present",
+                in_time=datetime_time(9, 0),
+                out_time=datetime_time(17, 0),
+                verification_status=verification_status,
+                created_by=admin_id,
+                verified_by=admin_id if verification_status != "pending" else None,
+            )
+            db.session.add(record)
+        db.session.commit()
+        pending_id = db.session.scalar(
+            db.select(AttendanceRecord.id).where(
+                AttendanceRecord.verification_status == "pending"
+            )
+        )
+
+    response = client.get("/attendance/?view=verification")
+    assert response.status_code == 200
+    assert b"Verification" in response.data
+    assert b"Total Submitted" in response.data
+    assert b"Pending Review" in response.data
+    assert b"VERIFY001" in response.data
+
+    response = client.post(
+        f"/attendance/{pending_id}/verify",
+        data={"view": "verification"},
+    )
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/attendance/?view=verification")
+
+
+def test_data_entry_cannot_open_verification_dashboard(client, app):
+    add_user(app, "verification_entry", "data_entry", 1)
+    authenticate_as(client, app, "verification_entry")
+
+    response = client.get("/attendance/?view=verification")
+
+    assert response.status_code == 403
+
+
 def test_bulk_verify_is_scoped_and_audited(client, app):
     manager_id = add_user(app, "bulk_manager", "manager", 1)
     employee_one = add_employee(app, "BULK001")
@@ -234,7 +283,10 @@ def test_filters_department_scope_and_excel_row_errors(client, app):
 
     client.post("/logout")
     authenticate_as(client, app, "attendance_entry_scope")
-    response = client.get("/attendance/")
+    response = client.get(
+        f"/attendance/?start_date={(date.today() - timedelta(days=2)).isoformat()}&"
+        f"end_date={date.today().isoformat()}"
+    )
     assert b"FILTER-GEN" in response.data
     assert b"<strong>FILTER-OPS</strong>" not in response.data
 

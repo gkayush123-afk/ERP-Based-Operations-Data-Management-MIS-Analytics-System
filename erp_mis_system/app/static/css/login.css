@@ -1,0 +1,4 @@
+/* Login-specific styles. Shared auth theme lives in auth.css. */
+.login-content {
+  width: min(100%, 420px);
+}

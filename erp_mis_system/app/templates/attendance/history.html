@@ -1,0 +1,50 @@
+{% extends "layout_app.html" %}
+{% block title %}Attendance History{% endblock %}
+{% block app_content %}
+<div class="verification-content">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('attendance.index') }}">Attendance</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('attendance.monthly', month=month) }}">Monthly</a><i class="bi bi-chevron-right"></i><span>{{ employee.employee_code }}</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-person-vcard"></i></span>
+      <div><h1>{{ employee.full_name }}</h1><p>{{ employee.employee_code }} · {{ employee.department.name }} · {{ month_label }}</p></div>
+    </div>
+    <form class="verification-date-form" method="get" action="{{ url_for('attendance.employee_history', employee_id=employee.id) }}" aria-label="Month">
+      <i class="bi bi-calendar3" aria-hidden="true"></i>
+      <label>Month <input class="form-control form-control-sm" type="month" name="month" value="{{ month }}" onchange="this.form.submit()"></label>
+    </form>
+  </div>
+
+  <section class="verification-records">
+    <div class="verification-records-heading">
+      <h2><i class="bi bi-calendar2-week"></i> {{ month_label }} · {{ attendance_percentage }}% present ({{ tally.present }}/{{ total }})</h2>
+    </div>
+    <div class="table-responsive">
+      <table class="table attendance-calendar mb-0">
+        <thead><tr><th>Mon</th><th>Tue</th><th>Wed</th><th>Thu</th><th>Fri</th><th>Sat</th><th>Sun</th></tr></thead>
+        <tbody>
+        {% for week in weeks %}
+          <tr>
+          {% for day in week %}
+            {% if day == 0 %}
+              <td class="cal-empty"></td>
+            {% else %}
+              {% set record = by_day.get(day) %}
+              <td class="cal-day {% if record %}cal-{{ record.status }}{% endif %}" {% if record %}title="{{ day }}: {{ record.status|replace('_', ' ')|title }}{% if record.in_time %} {{ record.in_time.strftime('%H:%M') }}{% endif %}"{% endif %}>{{ day }}</td>
+            {% endif %}
+          {% endfor %}
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="verification-table-footer attendance-legend">
+      <span><i class="cal-swatch cal-present"></i>Present ({{ tally.present }})</span>
+      <span><i class="cal-swatch cal-absent"></i>Absent ({{ tally.absent }})</span>
+      <span><i class="cal-swatch cal-late"></i>Late ({{ tally.late }})</span>
+      <span><i class="cal-swatch cal-leave"></i>Leave ({{ tally.leave }})</span>
+      <span><i class="cal-swatch cal-half_day"></i>Half-day ({{ tally.half_day }})</span>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block footer %}{% endblock %}

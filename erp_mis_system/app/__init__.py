@@ -120,6 +120,7 @@ def create_app(config_class=None):
     from .data_quality import data_quality_bp
     from .reports import reports_bp
     from .users import users_bp
+    from .verification import verification_bp
 
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_bp)
@@ -129,6 +130,35 @@ def create_app(config_class=None):
     app.register_blueprint(data_quality_bp)
     app.register_blueprint(reports_bp)
     app.register_blueprint(users_bp)
+    app.register_blueprint(verification_bp)
+
+    @app.cli.command("seed-verification")
+    def seed_verification_command():
+        """Insert sample operation records (development only, never automatic)."""
+        import click
+
+        if os.getenv("APP_ENV", "production").lower() != "development":
+            raise click.ClickException(
+                "seed-verification is only available with APP_ENV=development."
+            )
+        from .verification.routes import seed_verification_records
+
+        _count, message = seed_verification_records()
+        click.echo(message)
+
+    @app.cli.command("seed-attendance")
+    def seed_attendance_command():
+        """Generate sample attendance for the last 30 days (development only)."""
+        import click
+
+        if os.getenv("APP_ENV", "production").lower() != "development":
+            raise click.ClickException(
+                "seed-attendance is only available with APP_ENV=development."
+            )
+        from .attendance.routes import seed_attendance_records
+
+        _count, message = seed_attendance_records()
+        click.echo(message)
 
     @app.context_processor
     def inject_current_year():

@@ -1,55 +1,163 @@
-{% extends "base.html" %}
+{% extends "layout_app.html" %}
 {% block title %}Attendance{% endblock %}
-{% block content %}
-<section class="dashboard-section"><div class="container py-5">
-  <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
-    <div><span class="eyebrow">Operations</span><h1 class="h2 mt-2 mb-1">Attendance</h1><p class="text-secondary mb-0">{% if current_user.role == "data_entry" %}Attendance for your department.{% elif current_user.role == "manager" %}Department attendance and verification queue.{% else %}Organization-wide attendance records.{% endif %}</p></div>
-    <div class="d-flex gap-2"><a class="btn btn-outline-primary" href="{{ url_for('attendance.import_excel') }}"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Import Excel</a><a class="btn btn-primary" href="{{ url_for('attendance.create') }}"><i class="bi bi-plus-lg me-1"></i>Daily entry</a></div>
+{% macro page_url(p) %}{{ url_for('attendance.index', page=p, attendance_date=attendance_date or None, start_date=start_date or None, end_date=end_date or None, department_id=department_id, employee_id=employee_id, status=status_filter or None, verification_status=verification_filter or None, q=search or None) }}{% endmacro %}
+{% block app_content %}
+<div class="verification-content">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><span>Attendance</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-calendar-check"></i></span>
+      <div><h1>Attendance</h1><p>Track and manage daily employee attendance.</p></div>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <form class="verification-date-form" method="get" action="{{ url_for('attendance.index') }}" aria-label="Date">
+        {% if department_id %}<input type="hidden" name="department_id" value="{{ department_id }}">{% endif %}
+        {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+        {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
+        <i class="bi bi-calendar3" aria-hidden="true"></i>
+        <label>Date <input class="form-control form-control-sm" type="date" name="attendance_date" value="{{ attendance_date or start_date }}" onchange="this.form.submit()"></label>
+      </form>
+      <a class="btn btn-primary btn-sm" href="{{ url_for('attendance.mark', mark_date=attendance_date or start_date, department_id=department_id) }}"><i class="bi bi-plus-lg me-1"></i>Mark Attendance</a>
+    </div>
   </div>
-  <form class="info-panel mb-3" method="get"><div class="row g-3 align-items-end">
-    <div class="col-md-6 col-lg-2"><label class="form-label fw-semibold" for="start_date">From</label><input class="form-control" id="start_date" type="date" name="start_date" value="{{ start_date }}"></div>
-    <div class="col-md-6 col-lg-2"><label class="form-label fw-semibold" for="end_date">To</label><input class="form-control" id="end_date" type="date" name="end_date" value="{{ end_date }}"></div>
-    {% if current_user.role == "admin" %}<div class="col-md-6 col-lg-2"><label class="form-label fw-semibold" for="department_id">Department</label><select class="form-select" id="department_id" name="department_id"><option value="">All</option>{% for department in departments %}<option value="{{ department.id }}" {% if department_id == department.id %}selected{% endif %}>{{ department.name }}</option>{% endfor %}</select></div>{% endif %}
-    <div class="col-md-6 col-lg-2"><label class="form-label fw-semibold" for="employee_id">Employee</label><select class="form-select" id="employee_id" name="employee_id"><option value="">All</option>{% for employee in employees %}<option value="{{ employee.id }}" {% if employee_id == employee.id %}selected{% endif %}>{{ employee.employee_code }}</option>{% endfor %}</select></div>
-    <div class="col-md-6 col-lg-2"><label class="form-label fw-semibold" for="status">Status</label><select class="form-select" id="status" name="status"><option value="">All</option>{% for value, label in statuses %}<option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
-    <div class="col-md-6 col-lg-2"><label class="form-label fw-semibold" for="verification_status">Verification</label><select class="form-select" id="verification_status" name="verification_status"><option value="">All</option>{% for value, label in verification_statuses %}<option value="{{ value }}" {% if verification_filter == value %}selected{% endif %}>{{ label }}</option>{% endfor %}</select></div>
-    <div class="col-12 d-flex gap-2"><button class="btn btn-primary" type="submit">Filter</button><a class="btn btn-outline-secondary" href="{{ url_for('attendance.index') }}">Clear</a></div>
-  </div></form>
 
-  {% if can_verify %}
-  <form id="bulk-verify-form" method="post" action="{{ url_for('attendance.bulk_verify') }}">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-  </form>
+  {% if day_stats %}
+  <div class="verification-stats">
+    <div class="verification-stat">
+      <span class="verification-stat-icon stat-blue"><i class="bi bi-people-fill"></i></span>
+      <span><small>Total Employees</small><strong>{{ day_stats.total_employees }}</strong></span>
+    </div>
+    <div class="verification-stat">
+      <span class="verification-stat-icon stat-green"><i class="bi bi-check-circle-fill"></i></span>
+      <span><small>Present</small><strong>{{ day_stats.present }}</strong></span>
+    </div>
+    <div class="verification-stat">
+      <span class="verification-stat-icon stat-red"><i class="bi bi-x-circle-fill"></i></span>
+      <span><small>Absent</small><strong>{{ day_stats.absent }}</strong></span>
+    </div>
+    <div class="verification-stat">
+      <span class="verification-stat-icon stat-amber"><i class="bi bi-clock-fill"></i></span>
+      <span><small>Late</small><strong>{{ day_stats.late }}</strong></span>
+    </div>
+    <div class="verification-stat">
+      <span class="verification-stat-icon stat-purple"><i class="bi bi-airplane-fill"></i></span>
+      <span><small>On Leave</small><strong>{{ day_stats.leave }}</strong></span>
+    </div>
+    <div class="verification-stat">
+      <span class="verification-stat-icon stat-teal"><i class="bi bi-percent"></i></span>
+      <span><small>Attendance %</small><strong>{{ day_stats.attendance_percentage }}%</strong></span>
+    </div>
+  </div>
   {% endif %}
-  <div class="table-responsive bg-white rounded-4 shadow-sm"><table class="table align-middle mb-0">
-    <thead><tr>{% if can_verify %}<th><span class="visually-hidden">Select</span></th>{% endif %}<th>Date</th><th>Employee</th><th>Department</th><th>Attendance</th><th>Time</th><th>Verification</th><th>Remarks / reason</th><th class="text-end">Actions</th></tr></thead>
-    <tbody>{% for record in pagination.items %}
-      <tr>
-        {% if can_verify %}<td>{% if record.verification_status == "pending" %}<input class="form-check-input" form="bulk-verify-form" type="checkbox" name="record_ids" value="{{ record.id }}" aria-label="Select record {{ record.id }}">{% endif %}</td>{% endif %}
-        <td>{{ record.attendance_date.strftime("%Y-%m-%d") }}</td>
-        <td><strong>{{ record.employee.employee_code }}</strong><small class="d-block text-secondary">{{ record.employee.full_name }}</small></td>
-        <td>{{ record.employee.department.name }}</td>
-        <td>{{ record.status|replace("_", "-")|title }}</td>
-        <td>{{ record.in_time.strftime("%H:%M") if record.in_time else "—" }}{% if record.out_time %} – {{ record.out_time.strftime("%H:%M") }}{% endif %}</td>
-        <td><span class="badge {% if record.verification_status == 'verified' %}text-bg-success{% elif record.verification_status == 'rejected' %}text-bg-danger{% else %}text-bg-warning{% endif %}">{{ record.verification_status|title }}</span></td>
-        <td>{{ record.rejection_reason or record.remarks or "—" }}</td>
-        <td><div class="d-flex justify-content-end flex-wrap gap-1">
-          {% if record.verification_status == "pending" %}
-            {% if current_user.role == "data_entry" or current_user.role in ["admin", "manager"] %}<a class="btn btn-outline-primary btn-sm" href="{{ url_for('attendance.edit', record_id=record.id) }}">Edit</a>{% endif %}
-            {% if can_verify %}
-              <form method="post" action="{{ url_for('attendance.verify', record_id=record.id) }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-success btn-sm" type="submit">Verify</button></form>
-              <form method="post" action="{{ url_for('attendance.reject', record_id=record.id) }}" class="d-flex gap-1"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input class="form-control form-control-sm" name="rejection_reason" required maxlength="500" placeholder="Reason" aria-label="Rejection reason"><button class="btn btn-outline-danger btn-sm" type="submit">Reject</button></form>
-            {% endif %}
-          {% endif %}
-        </div></td>
-      </tr>
-    {% else %}<tr><td colspan="{{ 9 if can_verify else 8 }}" class="text-center text-secondary py-4">No attendance records match these filters.</td></tr>{% endfor %}</tbody>
-  </table></div>
-  {% if can_verify and pagination.items %}<div class="d-flex justify-content-end mt-3"><button class="btn btn-success" type="submit" form="bulk-verify-form" onclick="return confirm('Verify all selected pending records?');"><i class="bi bi-check2-all me-1"></i>Bulk verify selected</button></div>{% endif %}
-  {% if pagination.pages > 1 %}<nav class="mt-3" aria-label="Attendance pages"><ul class="pagination justify-content-end">
-    <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}"><a class="page-link" href="{{ url_for('attendance.index', page=pagination.prev_num, start_date=start_date, end_date=end_date, department_id=department_id, employee_id=employee_id, status=status_filter, verification_status=verification_filter) }}">Previous</a></li>
-    <li class="page-item disabled"><span class="page-link">Page {{ pagination.page }} of {{ pagination.pages }}</span></li>
-    <li class="page-item {% if not pagination.has_next %}disabled{% endif %}"><a class="page-link" href="{{ url_for('attendance.index', page=pagination.next_num, start_date=start_date, end_date=end_date, department_id=department_id, employee_id=employee_id, status=status_filter, verification_status=verification_filter) }}">Next</a></li>
-  </ul></nav>{% endif %}
-</div></section>
+
+  <form class="verification-filter" method="get" action="{{ url_for('attendance.index') }}">
+    <div class="verification-filter-field">
+      <label for="attendance_date">Date</label>
+      <input class="form-control" id="attendance_date" name="attendance_date" type="date" value="{{ attendance_date or start_date }}">
+    </div>
+    {% if current_user.role == "admin" %}
+    <div class="verification-filter-field">
+      <label for="department_id">Department</label>
+      <select class="form-select" id="department_id" name="department_id">
+        <option value="">All departments</option>
+        {% for department in departments %}
+          <option value="{{ department.id }}" {% if department_id == department.id %}selected{% endif %}>{{ department.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div class="verification-filter-field">
+      <label for="status">Status</label>
+      <select class="form-select" id="status" name="status">
+        <option value="">All statuses</option>
+        {% for value, label in statuses %}
+          <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="verification-filter-field">
+      <label for="q">Search</label>
+      <input class="form-control" id="q" name="q" type="text" maxlength="80" placeholder="Employee ID or name" value="{{ search }}">
+    </div>
+    <div class="verification-filter-actions">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i><span>Search</span></button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('attendance.index') }}"><i class="bi bi-arrow-counterclockwise"></i><span>Reset</span></a>
+    </div>
+  </form>
+
+  <section class="verification-records">
+    <div class="verification-records-heading">
+      <h2><i class="bi bi-list-ul"></i> Attendance Records</h2>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('attendance.import_excel') }}"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Import Excel</a>
+        <a class="btn btn-sm btn-outline-primary" href="{{ url_for('attendance.create') }}"><i class="bi bi-plus-lg me-1"></i>Daily entry</a>
+        <a class="btn btn-sm btn-outline-success" href="{{ url_for('attendance.export', file_format='xlsx', attendance_date=attendance_date or None, start_date=start_date or None, end_date=end_date or None, department_id=department_id, employee_id=employee_id, status=status_filter or None, verification_status=verification_filter or None, q=search or None) }}"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel</a>
+        <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('attendance.export', file_format='csv', attendance_date=attendance_date or None, start_date=start_date or None, end_date=end_date or None, department_id=department_id, employee_id=employee_id, status=status_filter or None, verification_status=verification_filter or None, q=search or None) }}"><i class="bi bi-filetype-csv me-1"></i>CSV</a>
+      </div>
+    </div>
+    {% if can_verify %}
+    <form id="bulk-verify-form" method="post" action="{{ url_for('attendance.bulk_verify') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    </form>
+    {% endif %}
+    <div class="table-responsive">
+      <table class="table verification-table align-middle mb-0">
+        <thead><tr>
+          {% if can_verify %}<th><span class="visually-hidden">Select</span></th>{% endif %}
+          <th>Date</th><th>Employee ID</th><th>Employee Name</th><th>Department</th><th>Status</th>
+          <th>Check In</th><th>Check Out</th><th>Remarks</th><th>Marked By</th><th>Verification</th><th>Actions</th>
+        </tr></thead>
+        <tbody>
+        {% for record in pagination.items %}
+          <tr>
+            {% if can_verify %}<td>{% if record.verification_status == "pending" %}<input class="form-check-input" form="bulk-verify-form" type="checkbox" name="record_ids" value="{{ record.id }}" aria-label="Select record {{ record.id }}">{% endif %}</td>{% endif %}
+            <td>{{ record.attendance_date.strftime("%d-%m-%Y") }}</td>
+            <td><strong>{{ record.employee.employee_code }}</strong></td>
+            <td>{{ record.employee.full_name }}</td>
+            <td>{{ record.employee.department.name }}</td>
+            <td><span class="attendance-status status-{{ record.status }}">{{ "On Leave" if record.status == "leave" else record.status|replace("_", " ")|title }}</span></td>
+            <td>{{ record.in_time.strftime("%H:%M") if record.in_time else "—" }}</td>
+            <td>{{ record.out_time.strftime("%H:%M") if record.out_time else "—" }}</td>
+            <td>{{ record.remarks or "—" }}</td>
+            <td>{{ record.creator.full_name if record.creator else "—" }}</td>
+            <td><span class="verification-status status-{{ record.verification_status }}">{{ record.verification_status|title }}</span></td>
+            <td><div class="verification-actions">
+              {% if record.verification_status == "pending" %}
+                <a class="verification-action action-view" href="{{ url_for('attendance.edit', record_id=record.id) }}" aria-label="Edit record"><i class="bi bi-pencil"></i></a>
+                {% if can_verify %}
+                <form method="post" action="{{ url_for('attendance.verify', record_id=record.id) }}">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <button class="verification-action action-verify" type="submit" aria-label="Verify record"><i class="bi bi-check-lg"></i></button>
+                </form>
+                <form method="post" action="{{ url_for('attendance.reject', record_id=record.id) }}" class="d-flex gap-1">
+                  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                  <input class="form-control form-control-sm" name="rejection_reason" required maxlength="500" placeholder="Reason" aria-label="Rejection reason">
+                  <button class="verification-action action-reject" type="submit" aria-label="Reject record"><i class="bi bi-x-lg"></i></button>
+                </form>
+                {% endif %}
+              {% endif %}
+            </div></td>
+          </tr>
+        {% else %}
+          <tr><td colspan="12" class="verification-empty">No attendance records match these filters.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="verification-table-footer">
+      <span>Showing {{ pagination.first or 0 }}–{{ pagination.last or 0 }} of {{ pagination.total }} records</span>
+      {% if can_verify and pagination.items %}
+        <button class="btn btn-sm btn-success" type="submit" form="bulk-verify-form" onclick="return confirm('Verify all selected pending records?');"><i class="bi bi-check2-all"></i>Bulk verify selected</button>
+      {% endif %}
+      {% if pagination.pages > 1 %}
+      <nav aria-label="Attendance pages"><ul class="pagination pagination-sm mb-0">
+        <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}"><a class="page-link" href="{{ page_url(pagination.prev_num) }}" aria-label="Previous page"><i class="bi bi-chevron-left"></i></a></li>
+        <li class="page-item active"><span class="page-link">{{ pagination.page }}</span></li>
+        <li class="page-item {% if not pagination.has_next %}disabled{% endif %}"><a class="page-link" href="{{ page_url(pagination.next_num) }}" aria-label="Next page"><i class="bi bi-chevron-right"></i></a></li>
+      </ul></nav>
+      {% endif %}
+    </div>
+  </section>
+</div>
 {% endblock %}
+{% block footer %}{% endblock %}

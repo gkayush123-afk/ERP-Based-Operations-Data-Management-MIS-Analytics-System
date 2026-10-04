@@ -13,7 +13,7 @@ from sqlalchemy.exc import IntegrityError
 from werkzeug.utils import secure_filename
 
 from ..extensions import db
-from ..models import Department, Employee, utcnow
+from ..models import AttendanceRecord, Department, Employee, OperationRecord, utcnow
 from ..utils.audit import log_action
 from ..utils.decorators import roles_required
 from . import employees_bp
@@ -136,6 +136,40 @@ def index():
         sort_key=sort_key,
         direction=direction,
         statuses=STATUS_CHOICES,
+    )
+
+
+@employees_bp.route("/<int:employee_id>")
+@roles_required("admin", "manager", "data_entry")
+def show(employee_id):
+    employee = db.get_or_404(Employee, employee_id)
+    if employee.deleted_at is not None:
+        abort(404)
+    if current_user.role in {"manager", "data_entry"}:
+        if employee.department_id != current_user.department_id:
+            abort(403)
+    recent_attendance = db.session.scalars(
+        db.select(AttendanceRecord)
+        .where(AttendanceRecord.employee_id == employee.id)
+        .order_by(AttendanceRecord.attendance_date.desc(), AttendanceRecord.id.desc())
+        .limit(5)
+    ).all()
+    operation_counts = {
+        status: 0 for status in ("verified", "pending", "rejected")
+    }
+    for status, total in db.session.execute(
+        db.select(OperationRecord.status, func.count(OperationRecord.id))
+        .where(OperationRecord.employee_id == employee.id)
+        .group_by(OperationRecord.status)
+    ):
+        if status in operation_counts:
+            operation_counts[status] = int(total)
+    operation_counts["total"] = sum(operation_counts.values())
+    return render_template(
+        "employees/show.html",
+        employee=employee,
+        recent_attendance=recent_attendance,
+        operation_counts=operation_counts,
     )
 
 

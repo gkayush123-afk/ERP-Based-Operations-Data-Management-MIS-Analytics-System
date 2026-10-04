@@ -7,6 +7,7 @@ from wtforms.validators import DataRequired, Length, Optional, ValidationError
 ATTENDANCE_STATUSES = [
     ("present", "Present"),
     ("absent", "Absent"),
+    ("late", "Late"),
     ("leave", "Leave"),
     ("half_day", "Half-day"),
 ]

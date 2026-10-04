@@ -1,0 +1,135 @@
+{% extends "layout_app.html" %}
+{% block title %}Mark Attendance{% endblock %}
+{% block app_content %}
+<div class="verification-content verification-content-wide">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('attendance.index') }}">Attendance</a><i class="bi bi-chevron-right"></i><span>Mark Attendance</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-calendar-plus"></i></span>
+      <div><h1>Mark Attendance</h1><p>Mark daily attendance for every employee in the department.</p></div>
+    </div>
+    <a class="btn btn-sm btn-outline-secondary" href="{{ url_for('attendance.index', attendance_date=mark_date) }}"><i class="bi bi-arrow-left me-1"></i>Back to daily view</a>
+  </div>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="mb-3">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show mb-2" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% if department is none %}
+    <div class="verification-records"><p class="verification-empty">No active departments are configured. Please contact your administrator.</p></div>
+  {% elif not employees %}
+    <div class="verification-records"><p class="verification-empty">No active employees in {{ department.name }}.</p></div>
+  {% else %}
+  <form class="verification-filter" method="get" action="{{ url_for('attendance.mark') }}">
+    <div class="verification-filter-field">
+      <label for="mark_date">Date</label>
+      <input class="form-control" id="mark_date" name="mark_date" type="date" value="{{ mark_date }}" max="{{ mark_date }}" onchange="this.form.submit()">
+    </div>
+    {% if departments %}
+    <div class="verification-filter-field">
+      <label for="department_id">Department</label>
+      <select class="form-select" id="department_id" name="department_id" onchange="this.form.submit()">
+        {% for item in departments %}
+          <option value="{{ item.id }}" {% if department and department.id == item.id %}selected{% endif %}>{{ item.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% else %}
+    <div class="verification-filter-field">
+      <label>Department</label>
+      <input class="form-control" type="text" value="{{ department.name }}" disabled>
+    </div>
+    {% endif %}
+    <div class="verification-filter-field">
+      <span class="mark-counter" data-mark-counter></span>
+    </div>
+    <div class="verification-filter-actions">
+      <button class="btn btn-outline-primary" type="button" data-mark-all-present><i class="bi bi-check2-all"></i><span>Mark all present</span></button>
+    </div>
+  </form>
+
+  <section class="verification-records">
+    <div class="verification-records-heading">
+      <h2><i class="bi bi-list-ul"></i> {{ department.name }} · {{ mark_date }}</h2>
+      <span class="text-secondary small">Rows already saved for this date are prefilled.</span>
+    </div>
+    <form method="post" action="{{ url_for('attendance.mark') }}" data-mark-form>
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <input type="hidden" name="mark_date" value="{{ mark_date }}">
+      <input type="hidden" name="department_id" value="{{ department.id }}">
+      <div class="table-responsive">
+        <table class="table verification-table align-middle mb-0">
+          <thead><tr>
+            <th>Employee ID</th><th>Employee Name</th><th>Status</th><th>Quick</th><th>Check In</th><th>Check Out</th><th>Remarks</th>
+          </tr></thead>
+          <tbody>
+          {% for employee in employees %}
+            {% set record = existing.get(employee.id) %}
+            {% set draft = submitted.get(employee.id) %}
+            <tr data-mark-row>
+              <td><strong>{{ employee.employee_code }}</strong><input type="hidden" name="employee_id" value="{{ employee.id }}"></td>
+              <td>{{ employee.full_name }}</td>
+              <td>
+                <select class="form-select form-select-sm" name="status" data-mark-status>
+                  {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if (draft.status if draft else (record.status if record else "present")) == value %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td><div class="btn-group btn-group-sm" role="group" aria-label="Quick status">
+                <button type="button" class="btn btn-outline-success" data-quick-status="present">P</button>
+                <button type="button" class="btn btn-outline-danger" data-quick-status="absent">A</button>
+                <button type="button" class="btn btn-outline-primary" data-quick-status="leave">L</button>
+              </div></td>
+              <td><input class="form-control form-control-sm" type="time" name="in_time" value="{{ draft.in_time if draft else (record.in_time.strftime('%H:%M') if record and record.in_time else '') }}"></td>
+              <td><input class="form-control form-control-sm" type="time" name="out_time" value="{{ draft.out_time if draft else (record.out_time.strftime('%H:%M') if record and record.out_time else '') }}"></td>
+              <td><input class="form-control form-control-sm" type="text" name="remarks" maxlength="1000" placeholder="Optional" value="{{ draft.remarks if draft else (record.remarks or '') }}"></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="verification-table-footer">
+        <span data-mark-counter></span>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-save me-1"></i>Save attendance</button>
+      </div>
+    </form>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}
+{% block app_scripts %}
+<script>
+  (() => {
+    const rows = [...document.querySelectorAll("[data-mark-row]")];
+    const counters = [...document.querySelectorAll("[data-mark-counter]")];
+    const updateCounter = () => {
+      const marked = rows.filter((row) => row.querySelector("[data-mark-status]").value).length;
+      counters.forEach((el) => { el.textContent = `${marked} of ${rows.length} marked`; });
+    };
+    document.querySelector("[data-mark-form]")?.addEventListener("change", updateCounter);
+    document.querySelector("[data-mark-all-present]")?.addEventListener("click", () => {
+      rows.forEach((row) => { row.querySelector("[data-mark-status]").value = "present"; });
+      updateCounter();
+    });
+    rows.forEach((row) => {
+      row.querySelectorAll("[data-quick-status]").forEach((button) => {
+        button.addEventListener("click", () => {
+          row.querySelector("[data-mark-status]").value = button.dataset.quickStatus;
+          updateCounter();
+        });
+      });
+    });
+    updateCounter();
+  })();
+</script>
+{% endblock %}

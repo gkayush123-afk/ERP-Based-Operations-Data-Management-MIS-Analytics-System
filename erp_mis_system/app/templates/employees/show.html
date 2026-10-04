@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}{{ employee.employee_code }} · Employees{% endblock %}
+{% block content %}
+<section class="dashboard-section"><div class="container py-5">
+  <div class="mb-4"><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('employees.index') }}"><i class="bi bi-arrow-left me-1"></i>All employees</a></div>
+  <div class="info-panel mb-4">
+    <div class="d-flex flex-wrap align-items-center gap-3">
+      <span class="auth-mark" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
+      <div class="me-auto">
+        <h1 class="h3 mb-1">{{ employee.full_name }}</h1>
+        <p class="text-secondary mb-0">{{ employee.employee_code }} · {{ employee.designation }} · {{ employee.department.name }}</p>
+      </div>
+      <span class="badge {% if employee.status == 'active' %}text-bg-success{% else %}text-bg-secondary{% endif %}">{{ employee.status|title }}</span>
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('employees.edit', employee_id=employee.id) }}">Edit</a>
+        {% if current_user.role == "admin" %}
+        <form method="post" action="{{ url_for('employees.delete', employee_id=employee.id) }}" data-confirm="Soft-delete this employee?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-danger btn-sm" type="submit">Delete</button></form>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6"><div class="info-panel h-100">
+      <h2 class="h5 mb-3">Employee details</h2>
+      <dl class="row mb-0">
+        <dt class="col-sm-4 text-secondary">Employee ID</dt><dd class="col-sm-8">{{ employee.employee_code }}</dd>
+        <dt class="col-sm-4 text-secondary">Full name</dt><dd class="col-sm-8">{{ employee.full_name }}</dd>
+        <dt class="col-sm-4 text-secondary">Email</dt><dd class="col-sm-8">{{ employee.email }}</dd>
+        <dt class="col-sm-4 text-secondary">Phone</dt><dd class="col-sm-8">{{ employee.phone or "—" }}</dd>
+        <dt class="col-sm-4 text-secondary">Designation</dt><dd class="col-sm-8">{{ employee.designation }}</dd>
+        <dt class="col-sm-4 text-secondary">Department</dt><dd class="col-sm-8">{{ employee.department.name }}</dd>
+        <dt class="col-sm-4 text-secondary">Joining date</dt><dd class="col-sm-8">{{ employee.joining_date.strftime("%Y-%m-%d") }}</dd>
+        <dt class="col-sm-4 text-secondary">Status</dt><dd class="col-sm-8">{{ employee.status|title }}</dd>
+      </dl>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('attendance.employee_history', employee_id=employee.id) }}"><i class="bi bi-calendar2-week me-1"></i>Attendance history</a>
+        {% if current_user.role in ["admin", "manager"] %}
+        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('verification.index', employee_code=employee.employee_code) }}"><i class="bi bi-shield-check me-1"></i>Verification records</a>
+        {% endif %}
+      </div>
+    </div></div>
+    <div class="col-lg-6"><div class="info-panel h-100">
+      <h2 class="h5 mb-3">Recent attendance</h2>
+      {% if recent_attendance %}
+      <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Date</th><th>Status</th><th>Time</th></tr></thead>
+        <tbody>
+        {% for record in recent_attendance %}
+          <tr><td>{{ record.attendance_date.strftime("%Y-%m-%d") }}</td><td>{{ record.status|replace("_", " ")|title }}</td><td>{{ record.in_time.strftime("%H:%M") if record.in_time else "—" }}{% if record.out_time %} – {{ record.out_time.strftime("%H:%M") }}{% endif %}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table></div>
+      {% else %}
+      <p class="text-secondary mb-0">No attendance recorded yet.</p>
+      {% endif %}
+      <h2 class="h5 mt-4 mb-3">Operation records</h2>
+      <p class="mb-0"><span class="badge text-bg-primary">{{ operation_counts.total }} total</span> <span class="badge text-bg-success">{{ operation_counts.verified }} verified</span> <span class="badge text-bg-warning">{{ operation_counts.pending }} pending</span> <span class="badge text-bg-danger">{{ operation_counts.rejected }} rejected</span></p>
+    </div></div>
+  </div>
+</div></section>
+{% endblock %}

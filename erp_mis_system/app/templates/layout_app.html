@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{# Shared sidebar layout for authenticated app pages (verification, and
+   other pages can adopt it later). Views pass active_nav to highlight the
+   current sidebar item. isolation: base navbar/footer are hidden by the
+   verification-page styles. #}
+{% block body_class %}verification-page{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/verification.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/attendance.css') }}">
+{% block page_head %}{% endblock %}
+{% endblock %}
+{% block content %}
+<div class="verification-app">
+  <header class="verification-topbar">
+    <a class="verification-brand" href="{{ url_for('main.dashboard') }}">
+      <span class="verification-brand-icon"><i class="bi bi-bar-chart-fill"></i></span>
+      <span><strong>ERP MIS</strong><small>Operations Data Management</small></span>
+    </a>
+    {% block topbar_search %}{% endblock %}
+    <div class="verification-account">
+      <span class="verification-bell" role="img" aria-label="Notifications" title="Notifications"><i class="bi bi-bell"></i></span>
+      <span class="verification-avatar"><i class="bi bi-person-fill"></i></span>
+      <span><a href="{{ url_for('auth.profile') }}" class="text-decoration-none text-reset"><strong>{{ current_user.full_name }}</strong></a><small>{{ current_user.role|replace("_", " ")|title }}</small></span>
+      <form method="post" action="{{ url_for('auth.logout') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-sm btn-outline-secondary" type="submit">Log out</button>
+      </form>
+    </div>
+  </header>
+
+  <div class="verification-layout">
+    <aside class="verification-sidebar" aria-label="Main navigation">
+      <nav>
+        <a href="{{ url_for('main.dashboard') }}" class="{% if active_nav|default('') == 'dashboard' %}active{% endif %}"><i class="bi bi-house-door"></i>Dashboard</a>
+        <a href="{{ url_for('employees.index') }}" class="{% if active_nav|default('') == 'employees' %}active{% endif %}"><i class="bi bi-people"></i>Employee Management</a>
+        <a href="{{ url_for('attendance.index') }}" class="{% if active_nav|default('') == 'attendance' %}active{% endif %}"><i class="bi bi-calendar-check"></i>Attendance</a>
+        <a href="{{ url_for('attendance.monthly') }}" class="{% if active_nav|default('') == 'operations' %}active{% endif %}"><i class="bi bi-clipboard-data"></i>Operations Data</a>
+        {% if current_user.role in ["admin", "manager"] %}
+        <a href="{{ url_for('verification.index') }}" class="{% if active_nav|default('') == 'verification' %}active{% endif %}" {% if active_nav|default('') == 'verification' %}aria-current="page"{% endif %}><i class="bi bi-shield-check"></i>Verification</a>
+        {% endif %}
+        {% if current_user.role in ["admin", "manager"] %}
+        <a href="{{ url_for('reports.operations') }}" class="{% if active_nav|default('') == 'reports' %}active{% endif %}"><i class="bi bi-bar-chart-line"></i>MIS Reports</a>
+        <a href="{{ url_for('reports.index') }}" class="{% if active_nav|default('') == 'analytics' %}active{% endif %}"><i class="bi bi-graph-up"></i>Analytics</a>
+        <a href="{{ url_for('reports.index') }}" class="{% if active_nav|default('') == 'export' %}active{% endif %}"><i class="bi bi-file-earmark-arrow-down"></i>Export Reports</a>
+        {% endif %}
+        {% if current_user.role == "admin" %}
+        <a href="{{ url_for('users.audit_logs') }}" class="{% if active_nav|default('') == 'audit' %}active{% endif %}"><i class="bi bi-clock-history"></i>Audit Trail</a>
+        {% endif %}
+        <a href="{{ url_for('auth.change_password') }}" class="{% if active_nav|default('') == 'settings' %}active{% endif %}"><i class="bi bi-gear"></i>Settings</a>
+      </nav>
+      <div class="verification-sidebar-note">
+        <i class="bi bi-file-earmark-check"></i>
+        <strong>Verify Today<br>for Better Reports<br>Tomorrow</strong>
+      </div>
+    </aside>
+
+    <main class="verification-main">
+      {% block app_content %}{% endblock %}
+    </main>
+  </div>
+</div>
+{% endblock %}
+{% block footer %}{% endblock %}
+{% block scripts %}{% block app_scripts %}{% endblock %}{% endblock %}

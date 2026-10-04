@@ -2,12 +2,12 @@ from datetime import datetime, timedelta, timezone
 from urllib.parse import urlsplit
 
 from flask import abort, current_app, flash, redirect, render_template, request, session, url_for
-from flask_login import current_user, login_user, logout_user
-from sqlalchemy import func
+from flask_login import current_user, login_required, login_user, logout_user
+from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from ..extensions import db
-from ..models import Department, User
+from ..models import AuditLog, Department, User
 from ..utils.audit import log_action
 from ..utils.decorators import roles_required
 from . import auth_bp
@@ -38,7 +38,12 @@ def login():
         try:
             user = db.session.scalar(
                 db.select(User)
-                .where(func.lower(User.username) == username.lower())
+                .where(
+                    or_(
+                        func.lower(User.username) == username.lower(),
+                        func.lower(User.email) == username.lower(),
+                    )
+                )
                 .with_for_update()
             )
         except SQLAlchemyError:
@@ -174,6 +179,10 @@ def register():
     if form.validate_on_submit():
         username = form.username.data.strip()
         email = form.email.data.strip().lower()
+        role = form.role.data
+        if role not in {"data_entry", "manager"}:
+            flash("Choose a valid role.", "danger")
+            return render_template("auth/register.html", form=form, departments=departments)
 
         if not departments:
             flash("Registration is temporarily unavailable because no departments are configured.", "warning")
@@ -183,7 +192,7 @@ def register():
             if db.session.scalar(
                 db.select(User.id).where(func.lower(User.username) == username.lower())
             ):
-                flash("That username is already in use. Please choose another.", "danger")
+                flash("That employee ID is already in use. Please choose another.", "danger")
                 return render_template("auth/register.html", form=form, departments=departments)
             if db.session.scalar(
                 db.select(User.id).where(func.lower(User.email) == email)
@@ -199,7 +208,7 @@ def register():
                 username=username,
                 email=email,
                 department_id=form.department_id.data,
-                role="data_entry",
+                role=role,
                 status="pending",
             )
             user.set_password(form.password.data)
@@ -214,6 +223,7 @@ def register():
                     {
                         "username": user.username,
                         "department_id": user.department_id,
+                        "role": user.role,
                         "status": user.status,
                     },
                 )
@@ -221,7 +231,7 @@ def register():
             except IntegrityError:
                 db.session.rollback()
                 flash(
-                    "That username or email is already registered. Please check your details.",
+                    "That employee ID or email is already registered. Please check your details.",
                     "danger",
                 )
                 return render_template("auth/register.html", form=form, departments=departments)
@@ -241,6 +251,18 @@ def register():
     if request.method == "POST":
         flash_form_errors(form)
     return render_template("auth/register.html", form=form, departments=departments)
+
+
+@auth_bp.route("/profile")
+@login_required
+def profile():
+    activities = db.session.scalars(
+        db.select(AuditLog)
+        .where(AuditLog.actor_user_id == current_user.id)
+        .order_by(AuditLog.occurred_at.desc(), AuditLog.id.desc())
+        .limit(5)
+    ).all()
+    return render_template("auth/profile.html", activities=activities)
 
 
 @auth_bp.route("/logout", methods=["POST"])

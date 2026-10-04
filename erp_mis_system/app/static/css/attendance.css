@@ -1,0 +1,91 @@
+/* Attendance module extras. Sidebar/topbar/stats/filter/table/pagination look
+ * comes from the shared .verification-* rules in style.css. */
+
+.attendance-status {
+  display: inline-block;
+  min-width: 76px;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.status-present { color: #08724e; background: #d9f3e7; }
+.status-absent { color: #b5323c; background: #ffe0e1; }
+.status-late { color: #9b6608; background: #fff0cf; }
+.status-half_day { color: #0b5ed7; background: #e2efff; }
+.status-leave { color: #6d28d9; background: #ede4fb; }
+
+.stat-purple { color: #6d28d9; background: #ede4fb; }
+.stat-teal { color: #087e6d; background: #ddf3ee; }
+
+.verification-content-wide {
+  width: min(100%, 1100px);
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.mark-counter {
+  display: inline-block;
+  padding-top: 1.35rem;
+  color: #405a75;
+  font-size: 0.72rem;
+  font-weight: 650;
+}
+
+.attendance-calendar th,
+.attendance-calendar td {
+  width: 14.28%;
+  padding: 0.5rem;
+  border: 1px solid #edf2f7;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.attendance-calendar thead th {
+  color: #536b84;
+  background: #f5f9fd;
+  font-size: 0.62rem;
+}
+
+.cal-empty {
+  background: #fafcfe;
+}
+
+.cal-day {
+  color: #304a65;
+  background: #fff;
+  font-weight: 600;
+}
+
+.cal-present { background: #d9f3e7; }
+.cal-absent { background: #ffe0e1; }
+.cal-late { background: #fff0cf; }
+.cal-leave { background: #ede4fb; }
+.cal-half_day { background: #e2efff; }
+
+.attendance-legend {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.attendance-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.cal-swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+@media (max-width: 767.98px) {
+  .verification-content-wide {
+    width: 100%;
+  }
+}

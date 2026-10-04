@@ -1,0 +1,78 @@
+/* Verification page extras. The sidebar/topbar/stats/filter/table/pagination
+ * look comes from the shared .verification-* rules in style.css. */
+
+.verification-bell {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #536d88;
+  background: #eef4fb;
+  font-size: 1rem;
+}
+
+.verification-date-form {
+  display: flex;
+  min-width: 168px;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #e0e9f3;
+  border-radius: 8px;
+  background: #fff;
+  color: #3972ac;
+}
+
+.verification-date-form > i {
+  font-size: 1rem;
+}
+
+.verification-date-form label {
+  display: grid;
+  gap: 0.1rem;
+  margin: 0;
+  color: #7b8da1;
+  font-size: 0.58rem;
+}
+
+.verification-date-form .form-control {
+  width: 8.2rem;
+  padding: 0.15rem 0.35rem;
+  font-size: 0.65rem;
+}
+
+.verification-table .num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* In-card flash messages (same look as the auth pages). */
+.auth-flashes {
+  margin-bottom: 1rem;
+}
+
+.auth-flashes .alert {
+  margin-bottom: 0.5rem;
+  padding: 0.6rem 0.75rem;
+  border-radius: 10px;
+  font-size: 0.8rem;
+}
+
+.auth-flashes .alert:last-child {
+  margin-bottom: 0;
+}
+
+#rejectModalReason {
+  font-size: 0.8rem;
+}
+
+@media (max-width: 767.98px) {
+  .verification-date-form {
+    width: 100%;
+  }
+
+  .verification-date-form .form-control {
+    width: 100%;
+  }
+}

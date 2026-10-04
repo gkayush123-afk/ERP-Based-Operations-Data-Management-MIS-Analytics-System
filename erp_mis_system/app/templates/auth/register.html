@@ -1,55 +1,149 @@
 {% extends "base.html" %}
 {% block title %}Register{% endblock %}
+{% block body_class %}auth-page register-page{% endblock %}
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}">
+{% endblock %}
 {% block content %}
-<section class="auth-section auth-section-wide">
-  <div class="auth-card">
-    <div class="text-center mb-4">
-      <span class="auth-mark"><i class="bi bi-person-plus"></i></span>
-      <h1 class="h3 mt-3">Create your account</h1>
-      <p class="text-secondary">Your account will be available after administrator approval.</p>
+<section class="auth-screen">
+  <svg class="auth-network" aria-hidden="true" preserveAspectRatio="xMidYMid slice" viewBox="0 0 800 600">
+    <g stroke="rgba(94, 234, 212, 0.5)" stroke-width="1">
+      <line x1="60" y1="120" x2="180" y2="200" />
+      <line x1="180" y1="200" x2="320" y2="150" />
+      <line x1="320" y1="150" x2="470" y2="230" />
+      <line x1="470" y1="230" x2="620" y2="160" />
+      <line x1="620" y1="160" x2="740" y2="240" />
+      <line x1="180" y1="200" x2="220" y2="360" />
+      <line x1="220" y1="360" x2="420" y2="420" />
+      <line x1="420" y1="420" x2="600" y2="380" />
+      <line x1="600" y1="380" x2="740" y2="240" />
+    </g>
+    <g fill="rgba(94, 234, 212, 0.7)">
+      <circle cx="60" cy="120" r="4" />
+      <circle cx="180" cy="200" r="4" />
+      <circle cx="320" cy="150" r="4" />
+      <circle cx="470" cy="230" r="4" />
+      <circle cx="620" cy="160" r="4" />
+      <circle cx="740" cy="240" r="4" />
+      <circle cx="220" cy="360" r="4" />
+      <circle cx="420" cy="420" r="4" />
+      <circle cx="600" cy="380" r="4" />
+    </g>
+  </svg>
+  <div class="auth-content register-content">
+    <header class="auth-heading">
+      <span class="auth-logo" aria-hidden="true">E</span>
+      <h1>Create your account</h1>
+      <p>Your account will be available after administrator approval.</p>
+    </header>
+
+    <div class="auth-card">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="auth-flashes">
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+              </div>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+      <form method="post" data-register-form novalidate>
+        {{ form.hidden_tag() }}
+        <div class="row g-3">
+          <div class="col-12">
+            <div class="auth-field">
+              {{ form.full_name.label(class="form-label") }}
+              {{ form.full_name(class="form-control" ~ (" is-invalid" if form.full_name.errors else ""), autocomplete="name", required=true, aria_invalid="true" if form.full_name.errors else "false") }}
+              {% for error in form.full_name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="auth-field">
+              {{ form.username.label(class="form-label") }}
+              {{ form.username(class="form-control" ~ (" is-invalid" if form.username.errors else ""), autocomplete="username", minlength="3", required=true, aria_invalid="true" if form.username.errors else "false") }}
+              {% for error in form.username.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="auth-field">
+              {{ form.email.label(class="form-label") }}
+              {{ form.email(class="form-control" ~ (" is-invalid" if form.email.errors else ""), type="email", autocomplete="email", required=true, aria_invalid="true" if form.email.errors else "false") }}
+              {% for error in form.email.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="auth-field">
+              {{ form.department_id.label(class="form-label") }}
+              {{ form.department_id(class="form-select" ~ (" is-invalid" if form.department_id.errors else ""), required=true, aria_invalid="true" if form.department_id.errors else "false") }}
+              {% for error in form.department_id.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+              {% if not departments %}<div class="form-text text-danger">No active departments are configured. Please contact your administrator.</div>{% endif %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="auth-field">
+              {{ form.role.label(class="form-label") }}
+              {{ form.role(class="form-select" ~ (" is-invalid" if form.role.errors else ""), required=true, aria_invalid="true" if form.role.errors else "false") }}
+              {% for error in form.role.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="auth-field">
+              {{ form.password.label(class="form-label", for="password") }}
+              <div class="auth-password-wrap">
+                {{ form.password(class="form-control" ~ (" is-invalid" if form.password.errors else ""), id="password", autocomplete="new-password", minlength="8", data_password_strength=true, required=true, aria_invalid="true" if form.password.errors else "false") }}
+                <button class="auth-password-toggle" type="button" aria-label="Show password" aria-pressed="false" data-password-toggle data-target="password">
+                  <i class="bi bi-eye" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="strength-track mt-2"><span data-strength-bar></span></div>
+              <div class="form-text" data-strength-label>Password strength: enter a password</div>
+              {% for error in form.password.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="auth-field">
+              {{ form.confirm_password.label(class="form-label", for="confirm_password") }}
+              <div class="auth-password-wrap">
+                {{ form.confirm_password(class="form-control" ~ (" is-invalid" if form.confirm_password.errors else ""), id="confirm_password", autocomplete="new-password", minlength="8", data_password_confirm=true, required=true, aria_invalid="true" if form.confirm_password.errors else "false") }}
+                <button class="auth-password-toggle" type="button" aria-label="Show password" aria-pressed="false" data-password-toggle data-target="confirm_password">
+                  <i class="bi bi-eye" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div class="form-text" data-confirm-message></div>
+              {% for error in form.confirm_password.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="form-text">At least 8 characters; use at least 3 types: lowercase, uppercase, number, symbol.</div>
+          </div>
+        </div>
+        <button class="btn auth-submit w-100 mt-4" type="submit" {% if not departments %}disabled{% endif %}>Create account</button>
+      </form>
+      <div class="auth-alt">Already registered? <a href="{{ url_for('auth.login') }}">Log in</a></div>
     </div>
-    <form method="post" data-register-form novalidate>
-      {{ form.hidden_tag() }}
-      <div class="row g-3">
-        <div class="col-12">
-          {{ form.full_name.label(class="form-label fw-semibold") }}
-          {{ form.full_name(class="form-control" ~ (" is-invalid" if form.full_name.errors else ""), autocomplete="name", required=true, aria_invalid="true" if form.full_name.errors else "false") }}
-          {% for error in form.full_name.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-        </div>
-        <div class="col-md-6">
-          {{ form.username.label(class="form-label fw-semibold") }}
-          {{ form.username(class="form-control" ~ (" is-invalid" if form.username.errors else ""), autocomplete="username", minlength="3", required=true, aria_invalid="true" if form.username.errors else "false") }}
-          {% for error in form.username.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-        </div>
-        <div class="col-md-6">
-          {{ form.email.label(class="form-label fw-semibold") }}
-          {{ form.email(class="form-control" ~ (" is-invalid" if form.email.errors else ""), type="email", autocomplete="email", required=true, aria_invalid="true" if form.email.errors else "false") }}
-          {% for error in form.email.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-        </div>
-        <div class="col-12">
-          {{ form.department_id.label(class="form-label fw-semibold") }}
-          {{ form.department_id(class="form-select" ~ (" is-invalid" if form.department_id.errors else ""), required=true, aria_invalid="true" if form.department_id.errors else "false") }}
-          {% for error in form.department_id.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-          {% if not departments %}<div class="form-text text-danger">No active departments are configured. Please contact your administrator.</div>{% endif %}
-        </div>
-        <div class="col-md-6">
-          {{ form.password.label(class="form-label fw-semibold") }}
-          {{ form.password(class="form-control" ~ (" is-invalid" if form.password.errors else ""), autocomplete="new-password", minlength="8", data_password_strength=true, required=true, aria_invalid="true" if form.password.errors else "false") }}
-          <div class="strength-track mt-2"><span data-strength-bar></span></div>
-          <div class="form-text" data-strength-label>Password strength: enter a password</div>
-          <div class="form-text">At least 8 characters; use at least 3 types: lowercase, uppercase, number, symbol.</div>
-          {% for error in form.password.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-        </div>
-        <div class="col-md-6">
-          {{ form.confirm_password.label(class="form-label fw-semibold") }}
-          {{ form.confirm_password(class="form-control" ~ (" is-invalid" if form.confirm_password.errors else ""), autocomplete="new-password", minlength="8", data_password_confirm=true, required=true, aria_invalid="true" if form.confirm_password.errors else "false") }}
-          <div class="form-text" data-confirm-message></div>
-          {% for error in form.confirm_password.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
-        </div>
-      </div>
-      <button class="btn btn-primary btn-lg w-100 mt-4" type="submit" {% if not departments %}disabled{% endif %}>Create account</button>
-    </form>
-    <p class="text-center text-secondary mt-4 mb-0">Already registered? <a href="{{ url_for('auth.login') }}">Log in</a></p>
+
+    <p class="auth-secure"><i class="bi bi-shield-lock" aria-hidden="true"></i> Secure enterprise login</p>
   </div>
+  <footer class="auth-footer">&copy; {{ current_year }} ERP Solutions. All rights reserved.</footer>
 </section>
+{% endblock %}
+{% block footer %}{% endblock %}
+{% block scripts %}
+<script>
+  document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const input = document.getElementById(button.dataset.target);
+      if (!input) return;
+      const visible = input.type === "password";
+      input.type = visible ? "text" : "password";
+      button.setAttribute("aria-pressed", String(visible));
+      button.setAttribute("aria-label", visible ? "Hide password" : "Show password");
+      button.innerHTML = `<i class="bi ${visible ? "bi-eye-slash" : "bi-eye"}" aria-hidden="true"></i>`;
+    });
+  });
+</script>
 {% endblock %}
