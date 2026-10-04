@@ -1,18 +1,30 @@
-{% extends "base.html" %}
+{% extends "layout_app.html" %}
 {% block title %}Edit user{% endblock %}
-{% block content %}
-<section class="auth-section">
-  <div class="auth-card">
-    <a class="small text-decoration-none" href="{{ url_for('users.index') }}"><i class="bi bi-arrow-left me-1"></i>User management</a>
-    <h1 class="h3 mt-3">Edit {{ user.username }}</h1>
-    <p class="text-secondary">{{ user.full_name }} · {{ user.email }}</p>
-    {% if not departments %}<div class="alert alert-warning">There are no active departments available.</div>{% endif %}
-    <form method="post" novalidate>
-      {{ form.hidden_tag() }}
-      <div class="mb-3">{{ form.role.label(class="form-label fw-semibold") }}{{ form.role(class="form-select", required=true) }}</div>
-      <div class="mb-4">{{ form.department_id.label(class="form-label fw-semibold") }}{{ form.department_id(class="form-select", required=true) }}</div>
-      <button class="btn btn-primary" type="submit" {% if not departments %}disabled{% endif %}>Save changes</button>
-    </form>
+{% block app_content %}
+<div class="verification-content">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('users.index') }}">User management</a><i class="bi bi-chevron-right"></i><span>Edit {{ user.username }}</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-person-gear"></i></span>
+      <div><h1>Edit {{ user.username }}</h1><p>{{ user.full_name }} · {{ user.email }}</p></div>
+    </div>
   </div>
-</section>
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="info-panel">
+        {% if not departments %}<div class="alert alert-warning">There are no active departments available.</div>{% endif %}
+        <form method="post" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="mb-3">{{ form.role.label(class="form-label fw-semibold") }}{{ form.role(class="form-select", required=true) }}</div>
+          <div class="mb-4">{{ form.department_id.label(class="form-label fw-semibold") }}{{ form.department_id(class="form-select", required=true) }}</div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit" {% if not departments %}disabled{% endif %}>Save changes</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('users.index') }}">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
+{% block app_scripts %}{% endblock %}

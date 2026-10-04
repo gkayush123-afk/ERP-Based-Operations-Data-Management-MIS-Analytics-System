@@ -1,79 +1,79 @@
-{% extends "base.html" %}
-{% block title %}MIS reports{% endblock %}
-{% block head %}
+{% extends "layout_app.html" %}
+{% block title %}Reports & Exports{% endblock %}
+{% block page_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 {% endblock %}
-{% block content %}
+{% block app_content %}
 {% set report_titles = {"daily": "Daily report", "weekly": "Weekly report", "monthly": "Monthly report", "department": "Department-wise summary", "summary": "Attendance summary"} %}
-<section class="dashboard-section"><div class="container py-5">
-  <div class="mb-4">
-    <span class="eyebrow">Management information system</span>
-    <h1 class="h2 mt-2 mb-1">MIS reports</h1>
-    <p class="text-secondary mb-0">{{ report_titles[filters.type] }} · {{ filters.start_date.isoformat() }} to {{ filters.end_date.isoformat() }}</p>
+<div class="verification-content">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><span>Reports & Exports</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-file-earmark-arrow-down"></i></span>
+      <div><h1>Reports & Exports</h1><p>Daily, weekly, monthly, and department-wise attendance summaries.</p></div>
+    </div>
+    <a class="btn btn-outline-primary btn-sm" href="{{ url_for('reports.operations') }}"><i class="bi bi-arrow-right me-1"></i>Switch to MIS Reports</a>
   </div>
 
-  <form class="info-panel mb-4" method="get" id="report-filters">
-    <div class="row g-3 align-items-end">
-      <div class="col-md-3">
-        <label class="form-label fw-semibold" for="type">Report</label>
-        <select class="form-select" id="type" name="type">
-          {% for value, label in [("daily", "Daily"), ("weekly", "Weekly"), ("monthly", "Monthly"), ("department", "Department-wise summary"), ("summary", "Attendance Summary")] %}
-            <option value="{{ value }}" {% if filters.type == value %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-3 period-field" data-for="daily,weekly">
-        <label class="form-label fw-semibold" for="date">Date / date in selected week</label>
-        <input class="form-control" id="date" name="date" type="date" value="{{ filters.period_date.isoformat() }}">
-      </div>
-      <div class="col-md-3 period-field" data-for="monthly">
-        <label class="form-label fw-semibold" for="month">Month</label>
-        <input class="form-control" id="month" name="month" type="month" value="{{ filters.period_month.strftime('%Y-%m') }}">
-      </div>
-      <div class="col-md-3 period-field" data-for="department,summary">
-        <label class="form-label fw-semibold" for="start_date">From</label>
-        <input class="form-control" id="start_date" name="start_date" type="date" value="{{ filters.start_date.isoformat() }}">
-      </div>
-      <div class="col-md-3 period-field" data-for="department,summary">
-        <label class="form-label fw-semibold" for="end_date">To</label>
-        <input class="form-control" id="end_date" name="end_date" type="date" value="{{ filters.end_date.isoformat() }}">
-      </div>
-      {% if current_user.role == "admin" %}
-      <div class="col-md-3">
-        <label class="form-label fw-semibold" for="department_id">Department</label>
-        <select class="form-select" id="department_id" name="department_id">
-          <option value="">All departments</option>
-          {% for department in departments %}
-            <option value="{{ department.id }}" {% if filters.department_id == department.id %}selected{% endif %}>{{ department.name }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      {% endif %}
-      <div class="col-md-3">
-        <label class="form-label fw-semibold" for="status">Attendance status</label>
-        <select class="form-select" id="status" name="status">
-          <option value="">All statuses</option>
-          {% for value, label in status_labels.items() %}
-            <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-12 d-flex flex-wrap gap-2">
-        <button class="btn btn-primary" type="submit">Run report</button>
-        <a class="btn btn-outline-secondary" href="{{ url_for('reports.index') }}">Reset</a>
-        <a class="btn btn-outline-success ms-md-auto" href="{{ url_for('reports.export', file_format='xlsx', **request.args) }}"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export Excel</a>
-        <a class="btn btn-outline-danger" href="{{ url_for('reports.export', file_format='pdf', **request.args) }}"><i class="bi bi-file-earmark-pdf me-1"></i>Export PDF</a>
-      </div>
+  <form class="verification-filter" method="get" action="{{ url_for('reports.index') }}">
+    <div class="verification-filter-field period-field" data-for="daily,weekly,monthly">
+      <label for="type">Report Type</label>
+      <select class="form-select" id="type" name="type">
+        {% for value, label in [("daily", "Daily"), ("weekly", "Weekly"), ("monthly", "Monthly"), ("department", "Department-wise summary"), ("summary", "Attendance Summary")] %}
+          <option value="{{ value }}" {% if filters.type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
     </div>
-    {% if filters.status %}<p class="small text-secondary mt-3 mb-0">The status filter narrows report counts. Department attendance percentage remains present records divided by expected active-employee days.</p>{% endif %}
+    <div class="verification-filter-field period-field" data-for="daily,weekly">
+      <label for="date">Date / date in selected week</label>
+      <input class="form-control" id="date" name="date" type="date" value="{{ filters.period_date.isoformat() }}">
+    </div>
+    <div class="verification-filter-field period-field" data-for="monthly">
+      <label for="month">Month</label>
+      <input class="form-control" id="month" name="month" type="month" value="{{ filters.period_month.strftime('%Y-%m') }}">
+    </div>
+    <div class="verification-filter-field period-field" data-for="department,summary">
+      <label for="start_date">From</label>
+      <input class="form-control" id="start_date" name="start_date" type="date" value="{{ filters.start_date.isoformat() }}">
+    </div>
+    <div class="verification-filter-field period-field" data-for="department,summary">
+      <label for="end_date">To</label>
+      <input class="form-control" id="end_date" name="end_date" type="date" value="{{ filters.end_date.isoformat() }}">
+    </div>
+    {% if current_user.role == "admin" %}
+    <div class="verification-filter-field">
+      <label for="department_id">Department</label>
+      <select class="form-select" id="department_id" name="department_id">
+        <option value="">All departments</option>
+        {% for department in departments %}
+          <option value="{{ department.id }}" {% if filters.department_id == department.id %}selected{% endif %}>{{ department.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div class="verification-filter-field">
+      <label for="status">Attendance status</label>
+      <select class="form-select" id="status" name="status">
+        <option value="">All statuses</option>
+        {% for value, label in status_labels.items() %}
+          <option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="verification-filter-actions">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i><span>Run Report</span></button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('reports.index') }}"><i class="bi bi-arrow-counterclockwise"></i><span>Reset</span></a>
+      <a class="btn btn-outline-success ms-md-auto" href="{{ url_for('reports.export', file_format='xlsx', **request.args) }}"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export Excel</a>
+      <a class="btn btn-outline-danger" href="{{ url_for('reports.export', file_format='pdf', **request.args) }}"><i class="bi bi-file-earmark-pdf me-1"></i>Export PDF</a>
+    </div>
   </form>
 
   <div class="info-panel mb-4">
     <h2 class="h5 mb-3">{{ report_titles[filters.type] }} chart</h2>
     {% if chart.labels %}
-      <div style="height: 340px"><canvas id="mis-report-chart" aria-label="{{ report_titles[filters.type] }} chart" role="img"></canvas></div>
+    <div style="height: 340px"><canvas id="mis-report-chart" aria-label="{{ report_titles[filters.type] }} chart" role="img"></canvas></div>
     {% else %}
-      <div class="empty-state"><i class="bi bi-bar-chart"></i><p class="mb-0 mt-2">No attendance records match these filters.</p></div>
+    <div class="empty-state"><i class="bi bi-bar-chart"></i><p class="mb-0 mt-2">No attendance records match these filters.</p></div>
     {% endif %}
   </div>
 
@@ -108,9 +108,9 @@
     {% if filters.type == "department" %}<p class="small text-secondary mt-3 mb-0">Attendance percentage = present records ÷ (active employees with a joining date on or before the period end × calendar days in the selected period).{% if filters.status %} Percentage is calculated across all attendance statuses, regardless of the status-count filter.{% endif %}</p>{% endif %}
     {% if filters.type == "summary" %}<p class="small text-secondary mt-3 mb-0">Attendance percentage = present records ÷ all records in the selected period for that employee.</p>{% endif %}
   </div>
-</div></section>
+</div>
 {% endblock %}
-{% block scripts %}
+{% block app_scripts %}
 <script>
   (() => {
     const typeSelect = document.getElementById("type");

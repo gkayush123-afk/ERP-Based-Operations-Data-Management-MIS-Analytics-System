@@ -40,8 +40,7 @@
         {% endif %}
         {% if current_user.role in ["admin", "manager"] %}
         <a href="{{ url_for('reports.operations') }}" class="{% if active_nav|default('') == 'reports' %}active{% endif %}"><i class="bi bi-bar-chart-line"></i>MIS Reports</a>
-        <a href="{{ url_for('reports.index') }}" class="{% if active_nav|default('') == 'analytics' %}active{% endif %}"><i class="bi bi-graph-up"></i>Analytics</a>
-        <a href="{{ url_for('reports.index') }}" class="{% if active_nav|default('') == 'export' %}active{% endif %}"><i class="bi bi-file-earmark-arrow-down"></i>Export Reports</a>
+        <a href="{{ url_for('reports.index') }}" class="{% if active_nav|default('') == 'analytics' %}active{% endif %}"><i class="bi bi-file-earmark-arrow-down"></i>Reports & Exports</a>
         {% endif %}
         {% if current_user.role == "admin" %}
         <a href="{{ url_for('users.audit_logs') }}" class="{% if active_nav|default('') == 'audit' %}active{% endif %}"><i class="bi bi-clock-history"></i>Audit Trail</a>

@@ -1,0 +1,42 @@
+<input type="hidden" name="report_mode" value="operations">
+<div class="verification-filter-field">
+  <label for="department_id">Department</label>
+  <select class="form-select" id="department_id" name="department_id">
+    <option value="">All departments</option>
+    {% for department in ops_departments %}
+      <option value="{{ department.id }}" {% if ops_filters.department_id == department.id %}selected{% endif %}>{{ department.name }}</option>
+    {% endfor %}
+  </select>
+</div>
+<div class="verification-filter-field">
+  <label for="employee_id">Employee</label>
+  <select class="form-select" id="employee_id" name="employee_id">
+    <option value="">All employees</option>
+    {% for employee in ops_employees %}
+      <option value="{{ employee.id }}" {% if ops_filters.employee_id == employee.id %}selected{% endif %}>{{ employee.employee_code }} — {{ employee.full_name }}</option>
+    {% endfor %}
+  </select>
+</div>
+<div class="verification-filter-field">
+  <label for="type">Report Type</label>
+  <select class="form-select" id="type" name="type">
+    {% for value, label in ops_report_types %}
+      <option value="{{ value }}" {% if ops_filters.type == value %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+  </select>
+</div>
+<div class="verification-filter-field">
+  <label for="start_date">From</label>
+  <input class="form-control" id="start_date" name="start_date" type="date" value="{{ ops_filters.start_date.isoformat() }}">
+</div>
+<div class="verification-filter-field">
+  <label for="end_date">To</label>
+  <input class="form-control" id="end_date" name="end_date" type="date" value="{{ ops_filters.end_date.isoformat() }}">
+</div>
+{% if ops_filters.q %}<input type="hidden" name="q" value="{{ ops_filters.q }}">{% endif %}
+<div class="verification-filter-actions">
+  <button class="btn btn-primary" type="submit"><i class="bi bi-funnel"></i><span>Apply Filter</span></button>
+  <a class="btn btn-outline-secondary" href="{{ url_for('reports.analytics', report_mode='operations') }}"><i class="bi bi-arrow-counterclockwise"></i><span>Reset</span></a>
+  <a class="btn btn-success ms-md-auto" href="{{ url_for('reports.operations_export', file_format='xlsx', type=ops_filters.type, department_id=ops_filters.department_id, employee_id=ops_filters.employee_id, q=ops_filters.q or None, start_date=ops_filters.start_date.isoformat(), end_date=ops_filters.end_date.isoformat()) }}"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Export Excel</a>
+  <a class="btn btn-primary" href="{{ url_for('reports.operations_export', file_format='pdf', type=ops_filters.type, department_id=ops_filters.department_id, employee_id=ops_filters.employee_id, q=ops_filters.q or None, start_date=ops_filters.start_date.isoformat(), end_date=ops_filters.end_date.isoformat()) }}"><i class="bi bi-file-earmark-pdf me-1"></i>Export PDF</a>
+</div>

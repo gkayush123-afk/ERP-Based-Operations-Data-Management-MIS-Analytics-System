@@ -136,6 +136,7 @@ def index():
         sort_key=sort_key,
         direction=direction,
         statuses=STATUS_CHOICES,
+        active_nav="employees",
     )
 
 
@@ -170,6 +171,7 @@ def show(employee_id):
         employee=employee,
         recent_attendance=recent_attendance,
         operation_counts=operation_counts,
+        active_nav="employees",
     )
 
 
@@ -188,7 +190,7 @@ def create():
             db.select(Employee.id).where(func.lower(Employee.employee_code) == code.lower())
         ):
             flash("That employee code is already in use.", "danger")
-            return render_template("employees/form.html", form=form, employee=None, departments=departments)
+            return render_template("employees/form.html", form=form, employee=None, departments=departments, active_nav="employees")
 
         department_id = (
             current_user.department_id
@@ -226,7 +228,7 @@ def create():
         except IntegrityError:
             db.session.rollback()
             flash("That employee code is already in use.", "danger")
-            return render_template("employees/form.html", form=form, employee=None, departments=departments)
+            return render_template("employees/form.html", form=form, employee=None, departments=departments, active_nav="employees")
         flash(f"Employee {employee.employee_code} was created.", "success")
         return redirect(url_for("employees.index"))
 
@@ -234,7 +236,7 @@ def create():
         for errors in form.errors.values():
             for message in errors:
                 flash(message, "danger")
-    return render_template("employees/form.html", form=form, employee=None, departments=departments)
+    return render_template("employees/form.html", form=form, employee=None, departments=departments, active_nav="employees")
 
 
 @employees_bp.route("/<int:employee_id>/edit", methods=["GET", "POST"])
@@ -263,7 +265,7 @@ def edit(employee_id):
         )
         if duplicate is not None:
             flash("That employee code is already in use.", "danger")
-            return render_template("employees/form.html", form=form, employee=employee, departments=departments)
+            return render_template("employees/form.html", form=form, employee=employee, departments=departments, active_nav="employees")
 
         old = {
             "employee_code": employee.employee_code,
@@ -304,7 +306,7 @@ def edit(employee_id):
         except IntegrityError:
             db.session.rollback()
             flash("That employee code is already in use.", "danger")
-            return render_template("employees/form.html", form=form, employee=employee, departments=departments)
+            return render_template("employees/form.html", form=form, employee=employee, departments=departments, active_nav="employees")
         flash(f"Employee {employee.employee_code} was updated.", "success")
         return redirect(url_for("employees.index"))
 
@@ -312,7 +314,7 @@ def edit(employee_id):
         for errors in form.errors.values():
             for message in errors:
                 flash(message, "danger")
-    return render_template("employees/form.html", form=form, employee=employee, departments=departments)
+    return render_template("employees/form.html", form=form, employee=employee, departments=departments, active_nav="employees")
 
 
 @employees_bp.route("/<int:employee_id>/delete", methods=["POST"])
@@ -346,10 +348,10 @@ def import_excel():
         upload = request.files.get("file")
         if upload is None or not upload.filename:
             flash("Choose an .xlsx file to import.", "danger")
-            return render_template("employees/import.html", row_results=row_results)
+            return render_template("employees/import.html", row_results=row_results, departments=departments, active_nav="employees")
         if Path(secure_filename(upload.filename)).suffix.lower() != ".xlsx":
             flash("Only .xlsx workbooks are supported.", "danger")
-            return render_template("employees/import.html", row_results=row_results)
+            return render_template("employees/import.html", row_results=row_results, departments=departments, active_nav="employees")
 
         try:
             workbook = load_workbook(upload, read_only=True, data_only=True)
@@ -361,10 +363,10 @@ def import_excel():
             if missing:
                 workbook.close()
                 flash(f"Missing required column(s): {', '.join(missing)}.", "danger")
-                return render_template("employees/import.html", row_results=row_results)
+                return render_template("employees/import.html", row_results=row_results, departments=departments, active_nav="employees")
         except (InvalidFileException, BadZipFile, OSError, ValueError, KeyError, ParseError):
             flash("The uploaded workbook could not be read. Please select a valid .xlsx file.", "danger")
-            return render_template("employees/import.html", row_results=row_results, departments=departments)
+            return render_template("employees/import.html", row_results=row_results, departments=departments, active_nav="employees")
 
         column_index = {name: headers.index(name) for name in IMPORT_COLUMNS}
         seen_codes = set()
@@ -490,4 +492,4 @@ def import_excel():
         imported_count = sum(result["status"] == "success" for result in row_results)
         error_count = len(row_results) - imported_count
         flash(f"Import complete: {imported_count} imported, {error_count} row(s) failed.", "info")
-    return render_template("employees/import.html", row_results=row_results, departments=departments)
+    return render_template("employees/import.html", row_results=row_results, departments=departments, active_nav="employees")

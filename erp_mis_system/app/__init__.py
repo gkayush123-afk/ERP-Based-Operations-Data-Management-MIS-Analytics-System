@@ -8,7 +8,7 @@ from flask import Flask, flash, redirect, render_template, request, session, url
 from flask_login import current_user, logout_user
 
 from .config import DevelopmentConfig, ProductionConfig
-from .extensions import csrf, db, login_manager
+from .extensions import csrf, db, limiter, login_manager
 
 
 def create_app(config_class=None):
@@ -44,6 +44,9 @@ def create_app(config_class=None):
     db.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
+    app.config.setdefault("RATELIMIT_LOGIN", "10 per minute")
+    app.config.setdefault("RATELIMIT_REGISTER", "5 per minute")
+    limiter.init_app(app)
 
     if initialize_database and not app.config.get("TESTING", False):
         with app.app_context():
@@ -218,6 +221,10 @@ def create_app(config_class=None):
     @app.errorhandler(403)
     def forbidden(_error):
         return render_template("errors/403.html"), 403
+
+    @app.errorhandler(429)
+    def too_many_requests(_error):
+        return render_template("errors/429.html"), 429
 
     @app.errorhandler(404)
     def not_found(_error):

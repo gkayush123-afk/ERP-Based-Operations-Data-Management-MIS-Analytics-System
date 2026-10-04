@@ -1,24 +1,36 @@
-{% extends "base.html" %}
+{% extends "layout_app.html" %}
 {% block title %}Create user{% endblock %}
-{% block content %}
-<section class="auth-section auth-section-wide">
-  <div class="auth-card">
-    <a class="small text-decoration-none" href="{{ url_for('users.index') }}"><i class="bi bi-arrow-left me-1"></i>User management</a>
-    <h1 class="h3 mt-3">Create user</h1>
-    <p class="text-secondary">New accounts are active and must change the temporary password at first login.</p>
-    {% if not departments %}<div class="alert alert-warning">Create an active department before creating a user.</div>{% endif %}
-    <form method="post" novalidate>
-      {{ form.hidden_tag() }}
-      <div class="row g-3">
-        <div class="col-md-6">{{ form.username.label(class="form-label fw-semibold") }}{{ form.username(class="form-control", required=true) }}</div>
-        <div class="col-md-6">{{ form.full_name.label(class="form-label fw-semibold") }}{{ form.full_name(class="form-control", required=true) }}</div>
-        <div class="col-12">{{ form.email.label(class="form-label fw-semibold") }}{{ form.email(class="form-control", type="email", required=true) }}</div>
-        <div class="col-md-6">{{ form.role.label(class="form-label fw-semibold") }}{{ form.role(class="form-select", required=true) }}</div>
-        <div class="col-md-6">{{ form.department_id.label(class="form-label fw-semibold") }}{{ form.department_id(class="form-select", required=true) }}</div>
-        <div class="col-12">{{ form.temporary_password.label(class="form-label fw-semibold") }}{{ form.temporary_password(class="form-control", autocomplete="new-password", required=true) }}<div class="form-text">At least 12 characters, using at least three character types. Share it securely.</div></div>
-      </div>
-      <button class="btn btn-primary mt-4" type="submit" {% if not departments %}disabled{% endif %}>Create user</button>
-    </form>
+{% block app_content %}
+<div class="verification-content">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('users.index') }}">User management</a><i class="bi bi-chevron-right"></i><span>Create user</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-person-plus"></i></span>
+      <div><h1>Create user</h1><p>New accounts are active and must change the temporary password at first login.</p></div>
+    </div>
   </div>
-</section>
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="info-panel">
+        {% if not departments %}<div class="alert alert-warning">Create an active department before creating a user.</div>{% endif %}
+        <form method="post" novalidate>
+          {{ form.hidden_tag() }}
+          <div class="row g-3">
+            <div class="col-md-6">{{ form.username.label(class="form-label fw-semibold") }}{{ form.username(class="form-control", required=true) }}</div>
+            <div class="col-md-6">{{ form.full_name.label(class="form-label fw-semibold") }}{{ form.full_name(class="form-control", required=true) }}</div>
+            <div class="col-12">{{ form.email.label(class="form-label fw-semibold") }}{{ form.email(class="form-control", type="email", required=true) }}</div>
+            <div class="col-md-6">{{ form.role.label(class="form-label fw-semibold") }}{{ form.role(class="form-select", required=true) }}</div>
+            <div class="col-md-6">{{ form.department_id.label(class="form-label fw-semibold") }}{{ form.department_id(class="form-select", required=true) }}</div>
+            <div class="col-12">{{ form.temporary_password.label(class="form-label fw-semibold") }}{{ form.temporary_password(class="form-control", autocomplete="new-password", required=true) }}<div class="form-text">At least 12 characters, using at least three character types. Share it securely.</div></div>
+          </div>
+          <div class="d-flex gap-2 mt-4">
+            <button class="btn btn-primary" type="submit" {% if not departments %}disabled{% endif %}>Create user</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('users.index') }}">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
+{% block app_scripts %}{% endblock %}

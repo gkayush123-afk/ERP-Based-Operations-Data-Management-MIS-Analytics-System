@@ -50,6 +50,7 @@ def dashboard():
         data_quality_count=data_quality_count,
         metrics=metrics,
         today=date.today().isoformat(),
+        active_nav="dashboard",
     )
 
 

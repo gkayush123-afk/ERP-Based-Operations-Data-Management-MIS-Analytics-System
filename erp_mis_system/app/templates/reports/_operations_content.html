@@ -1,0 +1,97 @@
+<div class="verification-stats mis-stats">
+  {% for card in ops_cards %}
+  <div class="verification-stat mis-stat">
+    <span class="verification-stat-icon {% if card.key == 'total' %}stat-blue{% elif card.key == 'verified' %}stat-green{% elif card.key == 'pending' %}stat-amber{% else %}stat-red{% endif %}">
+      <i class="bi {% if card.key == 'total' %}bi-database-fill{% elif card.key == 'verified' %}bi-check-circle-fill{% elif card.key == 'pending' %}bi-clock-fill{% else %}bi-x-circle-fill{% endif %}"></i>
+    </span>
+    <span><strong>{{ card.value }}</strong><small>{{ card.label }}</small></span>
+    <span class="mis-trend {% if card.good %}trend-good{% else %}trend-bad{% endif %}">
+      <i class="bi {% if card.direction == 'up' %}bi-arrow-up-right{% elif card.direction == 'down' %}bi-arrow-down-right{% else %}bi-dash{% endif %}"></i>
+      {{ card.percent }}% vs previous period
+    </span>
+  </div>
+  {% endfor %}
+</div>
+
+<div class="mis-charts">
+  <section class="mis-chart-card mis-chart-line">
+    <h2>Records Overview</h2>
+    {% if ops_trend.labels %}
+    <div class="mis-chart-body"><canvas id="ops-line-chart" aria-label="Records over time" role="img"></canvas></div>
+    {% else %}
+    <div class="mis-chart-placeholder"><i class="bi bi-graph-up"></i><p>No data for the selected filters.</p></div>
+    {% endif %}
+  </section>
+  <section class="mis-chart-card">
+    <h2>Department-wise Records</h2>
+    {% if ops_donut_labels %}
+    <div class="donut-wrap">
+      <canvas id="ops-donut-chart" aria-label="Records by department" role="img"></canvas>
+      <div class="donut-center"><strong>{{ ops_donut_total }}</strong><small>Total</small></div>
+    </div>
+    <ul class="donut-legend">
+      {% for item in ops_donut_legend %}
+      <li><i style="background: {{ ['#2764e7', '#168267', '#d28a13', '#7c5cd6', '#0ea5b7', '#94a3b8'][loop.index0 % 6] }}"></i><span>{{ item.label }}</span><span class="donut-numbers">{{ item.percent }}% · {{ item.value }}</span></li>
+      {% endfor %}
+    </ul>
+    {% else %}
+    <div class="mis-chart-placeholder"><i class="bi bi-pie-chart"></i><p>No data for the selected filters.</p></div>
+    {% endif %}
+  </section>
+  <section class="mis-chart-card">
+    <h2>Employee-wise Performance</h2>
+    {% if ops_top_employees %}
+    <div class="mis-chart-body"><canvas id="ops-bar-chart" aria-label="Top employees" role="img"></canvas></div>
+    {% else %}
+    <div class="mis-chart-placeholder"><i class="bi bi-bar-chart"></i><p>No data for the selected filters.</p></div>
+    {% endif %}
+  </section>
+</div>
+
+<section class="verification-records">
+  <div class="verification-records-heading">
+    <h2><i class="bi bi-list-ul"></i> {% if ops_filters.type == "employee" %}Employee-wise Detailed Report{% else %}Department-wise Detailed Report{% endif %}</h2>
+    {% if not ops_show_full %}
+    <a class="btn btn-sm btn-outline-primary" href="{{ url_for('reports.analytics', report_mode='operations', full=1, type=ops_filters.type, department_id=ops_filters.department_id, employee_id=ops_filters.employee_id, q=ops_filters.q or None, start_date=ops_filters.start_date.isoformat(), end_date=ops_filters.end_date.isoformat()) }}">View All Reports <i class="bi bi-arrow-right"></i></a>
+    {% endif %}
+  </div>
+  <div class="table-responsive">
+    <table class="table verification-table align-middle mb-0">
+      <thead><tr>
+        <th>S.No</th>
+        {% if ops_filters.type == "employee" %}<th>Employee ID</th><th>Employee Name</th>{% endif %}
+        <th>Department</th><th class="num">Total Records</th><th class="num">Verified</th>
+        <th class="num">Pending</th><th class="num">Rejected</th><th class="num">Needs Corr.</th><th class="num">Completion %</th>
+        <th>Last Updated</th><th>View</th>
+      </tr></thead>
+      <tbody>
+      {% for row in ops_table_rows %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          {% if ops_filters.type == "employee" %}<td><strong>{{ row.employee_code }}</strong></td><td>{{ row.employee_name }}</td>{% endif %}
+          <td>{{ row.department }}</td>
+          <td class="num">{{ row.total }}</td>
+          <td class="num">{{ row.verified }}</td>
+          <td class="num">{{ row.pending }}</td>
+          <td class="num">{{ row.rejected }}</td>
+          <td class="num">{{ row.needs_correction }}</td>
+          <td class="num">{{ row.completion_pct }}%</td>
+          <td>{{ row.last_updated }}</td>
+          <td>
+            {% if ops_filters.type == "employee" %}
+            <a class="verification-action action-view" href="{{ url_for('verification.index', employee_code=row.employee_code, start_date=ops_filters.start_date.isoformat(), end_date=ops_filters.end_date.isoformat()) }}" aria-label="View records"><i class="bi bi-eye"></i></a>
+            {% else %}
+            <a class="verification-action action-view" href="{{ url_for('verification.index', department_id=ops_dept_id_by_name.get(row.department), start_date=ops_filters.start_date.isoformat(), end_date=ops_filters.end_date.isoformat()) }}" aria-label="View records"><i class="bi bi-eye"></i></a>
+            {% endif %}
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="10" class="verification-empty">No records found.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="verification-table-footer">
+    <span>{{ ops_table_rows|length }} row(s) · {{ ops_filters.start_date.isoformat() }} to {{ ops_filters.end_date.isoformat() }}</span>
+  </div>
+</section>

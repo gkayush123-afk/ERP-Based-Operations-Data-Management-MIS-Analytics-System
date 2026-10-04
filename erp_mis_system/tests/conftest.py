@@ -14,6 +14,11 @@ def app():
         SQLALCHEMY_DATABASE_URI = "sqlite://"
         SQLALCHEMY_TRACK_MODIFICATIONS = False
         WTF_CSRF_ENABLED = False
+        # Keep the limiter enabled but effectively unlimited so the shared
+        # in-memory counters never trip during the suite; rate-limit tests
+        # override these per test.
+        RATELIMIT_LOGIN = "1000 per minute"
+        RATELIMIT_REGISTER = "1000 per minute"
         PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
         SESSION_COOKIE_HTTPONLY = True
         SESSION_COOKIE_SAMESITE = "Lax"

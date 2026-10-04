@@ -1,0 +1,5 @@
+{% extends "base.html" %}
+{% block title %}Too many requests{% endblock %}
+{% block content %}
+<section class="error-page"><div><span class="error-code">429</span><h1 class="h3">Too many requests</h1><p class="text-secondary">You have made too many requests in a short time. Please wait a moment and try again.</p><a class="btn btn-primary" href="{{ url_for('main.index') }}">Go home</a></div></section>
+{% endblock %}

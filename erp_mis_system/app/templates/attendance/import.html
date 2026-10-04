@@ -1,19 +1,27 @@
-{% extends "base.html" %}
+{% extends "layout_app.html" %}
 {% block title %}Import attendance{% endblock %}
-{% block content %}
-<section class="dashboard-section"><div class="container py-5">
-  <a class="small text-decoration-none" href="{{ url_for('attendance.index') }}"><i class="bi bi-arrow-left me-1"></i>Attendance</a>
-  <h1 class="h2 mt-3">Import attendance from Excel</h1>
-  <p class="text-secondary">Each valid row creates a pending record. Duplicate employee/date rows are reported and not imported.</p>
+{% block app_content %}
+<div class="verification-content">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('attendance.index') }}">Attendance</a><i class="bi bi-chevron-right"></i><span>Import attendance</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-file-earmark-spreadsheet"></i></span>
+      <div><h1>Import attendance from Excel</h1><p>Each valid row creates a pending record. Duplicate employee/date rows are reported and not imported.</p></div>
+    </div>
+  </div>
   <div class="info-panel mb-4"><p class="fw-semibold mb-2">Required headers</p><code>employee_code, date, status, in_time, out_time, remarks</code><p class="small text-secondary mt-2 mb-0">Status: Present, Absent, Leave, or Half-day. Date uses YYYY-MM-DD. Times are optional and use HH:MM. Manager and data-entry imports are restricted to their department.</p></div>
   <form class="info-panel mb-4" method="post" enctype="multipart/form-data" data-validated-form novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label class="form-label fw-semibold" for="file">Excel workbook (.xlsx)</label>
     <input class="form-control" type="file" id="file" name="file" accept=".xlsx" required>
-    <button class="btn btn-primary mt-3" type="submit">Import workbook</button>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-primary" type="submit">Import workbook</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('attendance.index') }}">Cancel</a>
+    </div>
   </form>
   {% if row_results %}<div class="info-panel"><h2 class="h5">Row results</h2><div class="table-responsive"><table class="table table-sm mb-0"><thead><tr><th>Excel row</th><th>Result</th><th>Details</th></tr></thead><tbody>
     {% for result in row_results %}<tr><td>{{ result.row }}</td><td><span class="badge {% if result.status == 'success' %}text-bg-success{% else %}text-bg-danger{% endif %}">{{ result.status|title }}</span></td><td>{{ result.message }}</td></tr>{% endfor %}
   </tbody></table></div></div>{% endif %}
-</div></section>
+</div>
 {% endblock %}
+{% block app_scripts %}{% endblock %}

@@ -1,18 +1,34 @@
-{% extends "base.html" %}
+{% extends "layout_app.html" %}
 {% block title %}Data quality{% endblock %}
-{% block content %}
+{% block app_content %}
 {% set visible_categories = [issue_filter] if issue_filter else ["missing", "duplicates", "invalid"] %}
-<section class="dashboard-section"><div class="container py-5">
-  <div class="mb-4"><span class="eyebrow">Validation</span><h1 class="h2 mt-2 mb-1">Data quality</h1><p class="text-secondary mb-0">Review missing, duplicate, and invalid records and open the source row to correct it.</p></div>
+<div class="verification-content">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><span>Verification</span><i class="bi bi-chevron-right"></i><span>Data quality</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-clipboard2-pulse"></i></span>
+      <div><h1>Data quality</h1><p>Review missing, duplicate, and invalid records and open the source row to correct it.</p></div>
+    </div>
+  </div>
 
-  <form class="info-panel mb-4" method="get">
-    <div class="row g-3 align-items-end">
-      <div class="col-md-4"><label class="form-label fw-semibold" for="start_date">Attendance range from</label><input class="form-control" id="start_date" name="start_date" type="date" value="{{ start_date }}" required></div>
-      <div class="col-md-4"><label class="form-label fw-semibold" for="end_date">Attendance range to</label><input class="form-control" id="end_date" name="end_date" type="date" value="{{ end_date }}" required></div>
-      {% if current_user.role == "admin" %}
-      <div class="col-md-4"><label class="form-label fw-semibold" for="department_id">Department</label><select class="form-select" id="department_id" name="department_id"><option value="">All departments</option>{% for department in departments %}<option value="{{ department.id }}" {% if department_id == department.id %}selected{% endif %}>{{ department.name }}</option>{% endfor %}</select></div>
-      {% endif %}
-      <div class="col-12 d-flex gap-2"><button class="btn btn-primary" type="submit">Apply filters</button><a class="btn btn-outline-secondary" href="{{ url_for('data_quality.index') }}">Reset</a></div>
+  <form class="verification-filter" method="get">
+    <div class="verification-filter-field">
+      <label for="start_date">Attendance range from</label>
+      <input class="form-control" id="start_date" name="start_date" type="date" value="{{ start_date }}" required>
+    </div>
+    <div class="verification-filter-field">
+      <label for="end_date">Attendance range to</label>
+      <input class="form-control" id="end_date" name="end_date" type="date" value="{{ end_date }}" required>
+    </div>
+    {% if current_user.role == "admin" %}
+    <div class="verification-filter-field">
+      <label for="department_id">Department</label>
+      <select class="form-select" id="department_id" name="department_id"><option value="">All departments</option>{% for department in departments %}<option value="{{ department.id }}" {% if department_id == department.id %}selected{% endif %}>{{ department.name }}</option>{% endfor %}</select>
+    </div>
+    {% endif %}
+    <div class="verification-filter-actions">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-funnel"></i><span>Apply filters</span></button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('data_quality.index') }}"><i class="bi bi-arrow-counterclockwise"></i><span>Reset</span></a>
     </div>
   </form>
 
@@ -31,7 +47,7 @@
         <h2 class="h5 mb-0">{{ category_title }}</h2>
         <span class="badge text-bg-light border">{{ entries|length }} issue(s)</span>
       </div>
-      <div class="table-responsive"><table class="table align-middle mb-0">
+      <div class="table-responsive"><table class="table verification-table align-middle mb-0">
         <thead><tr><th>Issue</th><th>Record</th><th>Details</th><th class="text-end">Fix</th></tr></thead>
         <tbody>
         {% for issue in entries %}
@@ -42,11 +58,12 @@
             <td class="text-end"><a class="btn btn-outline-primary btn-sm" href="{{ issue.fix_url }}">Fix / edit</a></td>
           </tr>
         {% else %}
-          <tr><td class="text-center text-secondary py-4" colspan="4">No issues in this category for the selected scope.</td></tr>
+          <tr><td class="verification-empty text-center" colspan="4">No issues in this category for the selected scope.</td></tr>
         {% endfor %}
         </tbody>
       </table></div>
     </div>
   {% endfor %}
-</div></section>
+</div>
 {% endblock %}
+{% block app_scripts %}{% endblock %}

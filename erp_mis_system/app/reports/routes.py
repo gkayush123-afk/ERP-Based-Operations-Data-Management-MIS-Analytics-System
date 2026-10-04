@@ -1,7 +1,7 @@
 from datetime import date
 from io import BytesIO
 
-from flask import abort, make_response, render_template, request
+from flask import abort, make_response, redirect, render_template, request, url_for
 from flask_login import current_user
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
@@ -149,6 +149,7 @@ def index():
         filters=filters,
         chart=_chart_payload(rows, filters["type"]),
         status_labels=STATUS_LABELS,
+        active_nav="analytics",
     )
 
 
@@ -618,3 +619,108 @@ def operations_export(file_format):
     response.headers["Content-Type"] = content_type
     response.headers["Content-Disposition"] = f'attachment; filename="{filename}"'
     return response
+
+
+@reports_bp.route("/analytics")
+@roles_required("admin", "manager")
+def analytics():
+    """Backward-compatible alias - Analytics was merged into Reports & Exports (/reports/)."""
+    return redirect(url_for("reports.index", **request.args))
+
+def _analytics_combined_unused():  # Kept for reference; route moved above to redirect.
+    """Single Analytics & Reports page - one shared filter, attendance + operations together."""
+
+    att_type = request.args.get("att_type", "department")
+    if att_type not in {"daily", "weekly", "monthly", "department", "summary"}:
+        att_type = "department"
+    ops_type = request.args.get("ops_type", "overall")
+    if ops_type not in OPERATION_TYPE_LABELS:
+        ops_type = "overall"
+    status = request.args.get("status") or None
+    if status not in (*STATUS_VALUES, None):
+        abort(400, description="Choose a valid attendance status.")
+    today = date.today()
+    try:
+        start_date = date.fromisoformat(request.args.get("start_date", today.replace(day=1).isoformat()))
+        end_date = date.fromisoformat(request.args.get("end_date", today.isoformat()))
+    except ValueError:
+        abort(400, description="Enter valid report dates.")
+    if start_date > end_date:
+        abort(400, description="Start date must not be after end date.")
+    if (end_date - start_date).days > MAX_OPERATION_RANGE_DAYS:
+        abort(400, description="Date range must not exceed one year.")
+    department_id = request.args.get("department_id", type=int)
+    if current_user.role == "manager":
+        if current_user.department_id is None:
+            abort(403, description="A manager must be assigned to a department.")
+        department_id = current_user.department_id
+    elif department_id is not None:
+        department = db.session.get(Department, department_id)
+        if department is None:
+            abort(400, description="Choose a valid department.")
+
+    att_rows = build_report(
+        db.session, att_type, start_date, end_date,
+        department_id=department_id, status=status,
+    )
+    att_chart = _chart_payload(att_rows, att_type)
+    ops_filters = {
+        "type": ops_type, "start_date": start_date, "end_date": end_date,
+        "department_id": department_id, "employee_id": None, "q": "",
+    }
+    ops_cards = _operation_cards(db.session, ops_filters)
+    ops_dept_rows = build_operation_by_department(
+        db.session, start_date, end_date, department_id=department_id,
+    )
+    ops_emp_rows = build_operation_by_employee(
+        db.session, start_date, end_date, department_id=department_id,
+    )
+    top_departments = ops_dept_rows[:5]
+    others_total = sum(row["total"] for row in ops_dept_rows[5:])
+    ops_donut_labels = [row["department"] for row in top_departments]
+    ops_donut_values = [row["total"] for row in top_departments]
+    if others_total:
+        ops_donut_labels.append("Others")
+        ops_donut_values.append(others_total)
+    ops_donut_legend = [
+        {
+            "label": label, "value": value,
+            "percent": round(value * 100 / sum(ops_donut_values), 1) if sum(ops_donut_values) else 0.0,
+        }
+        for label, value in zip(ops_donut_labels, ops_donut_values)
+    ]
+    ops_top_employees = ops_emp_rows[:5]
+    ops_table_rows = (ops_emp_rows if ops_type == "employee" else ops_dept_rows)[:10]
+    departments = db.session.scalars(
+        db.select(Department).where(Department.is_active.is_(True)).order_by(Department.name)
+    ).all()
+    if current_user.role == "manager":
+        departments = [d for d in departments if d.id == current_user.department_id]
+    att_titles = {"daily": "Daily report", "weekly": "Weekly report", "monthly": "Monthly report", "department": "Department-wise summary", "summary": "Employee summary"}
+
+    return render_template(
+        "reports/analytics.html",
+        active_nav="analytics",
+        att_type=att_type,
+        att_title=att_titles.get(att_type, ""),
+        att_export_type=att_type,
+        att_rows=att_rows,
+        att_chart_labels=att_chart.get("labels", []),
+        att_chart_series=att_chart.get("series", {}),
+        ops_type=ops_type,
+        ops_type_label=OPERATION_TYPE_LABELS.get(ops_type, ""),
+        ops_report_types=OPERATION_REPORT_TYPES,
+        ops_cards=ops_cards,
+        ops_donut_labels=ops_donut_labels,
+        ops_donut_values=ops_donut_values,
+        ops_donut_legend=ops_donut_legend,
+        ops_donut_total=sum(ops_donut_values),
+        ops_top_employees=ops_top_employees,
+        ops_table_rows=ops_table_rows,
+        departments=departments,
+        department_id=department_id,
+        status=status,
+        status_labels=STATUS_LABELS,
+        start_date=start_date,
+        end_date=end_date,
+    )

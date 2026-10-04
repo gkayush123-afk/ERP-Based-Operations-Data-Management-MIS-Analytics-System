@@ -322,7 +322,7 @@ def index():
         verification_page=verification_page,
         verification_summary=verification_summary if verification_page else None,
         day_stats=day_stats,
-        active_nav="attendance",
+        active_nav="verification" if verification_page else "attendance",
     )
 
 
@@ -361,7 +361,7 @@ def create():
             )
         ):
             flash("Attendance has already been entered for this employee and date.", "danger")
-            return render_template("attendance/form.html", form=form, record=None, employees=employees)
+            return render_template("attendance/form.html", form=form, record=None, employees=employees, active_nav="attendance")
 
         record = AttendanceRecord(
             employee_id=employee.id,
@@ -391,7 +391,7 @@ def create():
         except IntegrityError:
             db.session.rollback()
             flash("Attendance has already been entered for this employee and date.", "danger")
-            return render_template("attendance/form.html", form=form, record=None, employees=employees)
+            return render_template("attendance/form.html", form=form, record=None, employees=employees, active_nav="attendance")
         flash("Attendance record submitted for verification.", "success")
         return redirect(url_for("attendance.index"))
 
@@ -399,7 +399,7 @@ def create():
         for errors in form.errors.values():
             for message in errors:
                 flash(message, "danger")
-    return render_template("attendance/form.html", form=form, record=None, employees=employees)
+    return render_template("attendance/form.html", form=form, record=None, employees=employees, active_nav="attendance")
 
 
 @attendance_bp.route("/<int:record_id>/edit", methods=["GET", "POST"])
@@ -432,7 +432,7 @@ def edit(record_id):
         )
         if duplicate:
             flash("Attendance has already been entered for this employee and date.", "danger")
-            return render_template("attendance/form.html", form=form, record=record, employees=employees)
+            return render_template("attendance/form.html", form=form, record=record, employees=employees, active_nav="attendance")
 
         before = {
             "employee_id": record.employee_id,
@@ -467,7 +467,7 @@ def edit(record_id):
         except IntegrityError:
             db.session.rollback()
             flash("Attendance has already been entered for this employee and date.", "danger")
-            return render_template("attendance/form.html", form=form, record=record, employees=employees)
+            return render_template("attendance/form.html", form=form, record=record, employees=employees, active_nav="attendance")
         flash("Pending attendance record was updated.", "success")
         return redirect(url_for("attendance.index"))
 
@@ -475,7 +475,7 @@ def edit(record_id):
         for errors in form.errors.values():
             for message in errors:
                 flash(message, "danger")
-    return render_template("attendance/form.html", form=form, record=record, employees=employees)
+    return render_template("attendance/form.html", form=form, record=record, employees=employees, active_nav="attendance")
 
 
 @attendance_bp.route("/<int:record_id>/verify", methods=["POST"])
@@ -620,10 +620,10 @@ def import_excel():
         upload = request.files.get("file")
         if upload is None or not upload.filename:
             flash("Choose an .xlsx workbook.", "danger")
-            return render_template("attendance/import.html", row_results=row_results)
+            return render_template("attendance/import.html", row_results=row_results, active_nav="attendance")
         if Path(upload.filename).suffix.lower() != ".xlsx":
             flash("Only .xlsx workbooks are supported.", "danger")
-            return render_template("attendance/import.html", row_results=row_results)
+            return render_template("attendance/import.html", row_results=row_results, active_nav="attendance")
         try:
             workbook = load_workbook(upload, read_only=True, data_only=True)
             sheet = workbook.active
@@ -631,12 +631,12 @@ def import_excel():
             headers = [str(value or "").strip().lower() for value in (next(rows, None) or ())]
         except (InvalidFileException, BadZipFile, OSError, ValueError, KeyError, ParseError):
             flash("The workbook could not be read. Choose a valid .xlsx file.", "danger")
-            return render_template("attendance/import.html", row_results=row_results)
+            return render_template("attendance/import.html", row_results=row_results, active_nav="attendance")
         missing = [column for column in IMPORT_COLUMNS if column not in headers]
         if missing:
             workbook.close()
             flash(f"Missing required column(s): {', '.join(missing)}.", "danger")
-            return render_template("attendance/import.html", row_results=row_results)
+            return render_template("attendance/import.html", row_results=row_results, active_nav="attendance")
         indices = {column: headers.index(column) for column in IMPORT_COLUMNS}
         for row_number, values in enumerate(rows, start=2):
             if not values or not any(value not in (None, "") for value in values):
@@ -732,7 +732,7 @@ def import_excel():
         workbook.close()
         successes = sum(result["status"] == "success" for result in row_results)
         flash(f"Import complete: {successes} imported, {len(row_results) - successes} row(s) failed.", "info")
-    return render_template("attendance/import.html", row_results=row_results)
+    return render_template("attendance/import.html", row_results=row_results, active_nav="attendance")
 
 
 @attendance_bp.route("/mark", methods=["GET", "POST"])

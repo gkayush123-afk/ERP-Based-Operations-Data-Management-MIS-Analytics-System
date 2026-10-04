@@ -1,0 +1,233 @@
+{% extends "layout_app.html" %}
+{% block title %}Reports & Exports{% endblock %}
+{% block page_head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/reports.css') }}">
+{% endblock %}
+{% block app_content %}
+<div class="verification-content verification-content-wide">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><span>Reports & Exports</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-file-earmark-arrow-down"></i></span>
+      <div><h1>Reports & Exports</h1><p>Attendance trends, department summaries and operational insights · {{ start_date.isoformat() }} to {{ end_date.isoformat() }}</p></div>
+    </div>
+  </div>
+
+  <form class="verification-filter" method="get" action="{{ url_for('reports.analytics') }}">
+    <div class="verification-filter-field">
+      <label for="att_type">Attendance view</label>
+      <select class="form-select" id="att_type" name="att_type">
+        {% for value, label in [("daily","Daily"),("weekly","Weekly"),("monthly","Monthly"),("department","Department-wise"),("summary","Employee summary")] %}
+        <option value="{{ value }}" {% if att_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% if current_user.role == "admin" %}
+    <div class="verification-filter-field">
+      <label for="department_id">Department</label>
+      <select class="form-select" id="department_id" name="department_id">
+        <option value="">All departments</option>
+        {% for department in departments %}
+        <option value="{{ department.id }}" {% if department_id == department.id %}selected{% endif %}>{{ department.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div class="verification-filter-field">
+      <label for="status">Status</label>
+      <select class="form-select" id="status" name="status">
+        <option value="">All statuses</option>
+        {% for value, label in status_labels.items() %}
+        <option value="{{ value }}" {% if status == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="verification-filter-field">
+      <label for="start_date">From</label>
+      <input class="form-control" id="start_date" name="start_date" type="date" value="{{ start_date.isoformat() }}">
+    </div>
+    <div class="verification-filter-field">
+      <label for="end_date">To</label>
+      <input class="form-control" id="end_date" name="end_date" type="date" value="{{ end_date.isoformat() }}">
+    </div>
+    <div class="verification-filter-field">
+      <label for="ops_type">Operations view</label>
+      <select class="form-select" id="ops_type" name="ops_type">
+        {% for value, label in ops_report_types %}
+        <option value="{{ value }}" {% if ops_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="verification-filter-actions">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i><span>Apply</span></button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('reports.analytics') }}"><i class="bi bi-arrow-counterclockwise"></i><span>Reset</span></a>
+    </div>
+  </form>
+
+  <div class="verification-stats mis-stats">
+    {% for card in ops_cards %}
+    <div class="verification-stat mis-stat">
+      <span class="verification-stat-icon {% if card.key == 'total' %}stat-blue{% elif card.key == 'verified' %}stat-green{% elif card.key == 'pending' %}stat-amber{% else %}stat-red{% endif %}">
+        <i class="bi {% if card.key == 'total' %}bi-database-fill{% elif card.key == 'verified' %}bi-check-circle-fill{% elif card.key == 'pending' %}bi-clock-fill{% else %}bi-x-circle-fill{% endif %}"></i>
+      </span>
+      <span><strong>{{ card.value }}</strong><small>{{ card.label }}</small></span>
+      <span class="mis-trend {% if card.good %}trend-good{% else %}trend-bad{% endif %}">
+        <i class="bi {% if card.direction == 'up' %}bi-arrow-up-right{% elif card.direction == 'down' %}bi-arrow-down-right{% else %}bi-dash{% endif %}"></i>
+        {{ card.percent }}% vs previous period
+      </span>
+    </div>
+    {% endfor %}
+  </div>
+
+  <div class="mis-charts">
+    <section class="mis-chart-card mis-chart-line">
+      <h2>Attendance overview</h2>
+      {% if att_chart_labels %}
+      <div class="mis-chart-body"><canvas id="analytics-att-chart" aria-label="Attendance overview" role="img"></canvas></div>
+      {% else %}
+      <div class="mis-chart-placeholder"><i class="bi bi-graph-up"></i><p>No attendance data for the selected filters.</p></div>
+      {% endif %}
+    </section>
+    <section class="mis-chart-card">
+      <h2>Records by department</h2>
+      {% if ops_donut_labels %}
+      <div class="donut-wrap">
+        <canvas id="analytics-donut-chart" aria-label="Records by department" role="img"></canvas>
+        <div class="donut-center"><strong>{{ ops_donut_total }}</strong><small>Total</small></div>
+      </div>
+      <ul class="donut-legend">
+        {% for item in ops_donut_legend %}
+        <li><i style="background: {{ ['#2764e7', '#168267', '#d28a13', '#7c5cd6', '#0ea5b7', '#94a3b8'][loop.index0 % 6] }}"></i><span>{{ item.label }}</span><span class="donut-numbers">{{ item.percent }}% · {{ item.value }}</span></li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="mis-chart-placeholder"><i class="bi bi-pie-chart"></i><p>No data for the selected filters.</p></div>
+      {% endif %}
+    </section>
+    <section class="mis-chart-card">
+      <h2>Top employees</h2>
+      {% if ops_top_employees %}
+      <div class="mis-chart-body"><canvas id="analytics-bar-chart" aria-label="Top employees" role="img"></canvas></div>
+      {% else %}
+      <div class="mis-chart-placeholder"><i class="bi bi-bar-chart"></i><p>No data for the selected filters.</p></div>
+      {% endif %}
+    </section>
+  </div>
+
+  <section class="verification-records">
+    <div class="verification-records-heading">
+      <h2><i class="bi bi-list-ul"></i> Attendance breakdown · {{ att_title }}</h2>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-success" href="{{ url_for('reports.export', file_format='xlsx', type=att_export_type, department_id=department_id, status=status or None, date=end_date.isoformat(), month=end_date.strftime('%Y-%m'), start_date=start_date.isoformat(), end_date=end_date.isoformat()) }}"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel</a>
+        <a class="btn btn-sm btn-outline-danger" href="{{ url_for('reports.export', file_format='pdf', type=att_export_type, department_id=department_id, status=status or None, date=end_date.isoformat(), month=end_date.strftime('%Y-%m'), start_date=start_date.isoformat(), end_date=end_date.isoformat()) }}"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table verification-table align-middle mb-0">
+        <thead><tr>
+          {% if att_type == "department" %}
+          <th>Department</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Late</th><th class="num">Leave</th><th class="num">Half-day</th><th class="num">Active</th><th class="num">Att. %</th>
+          {% elif att_type == "summary" %}
+          <th>Department</th><th>Employee ID</th><th>Employee Name</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Late</th><th class="num">Leave</th><th class="num">Half-day</th><th class="num">Total</th><th class="num">Att. %</th>
+          {% else %}
+          <th>Date</th><th>Department</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Late</th><th class="num">Leave</th><th class="num">Half-day</th>
+          {% endif %}
+        </tr></thead>
+        <tbody>
+        {% for row in att_rows %}
+        <tr>
+          {% if att_type == "department" %}
+          <td>{{ row.department }}</td><td class="num">{{ row.present }}</td><td class="num">{{ row.absent }}</td><td class="num">{{ row.late }}</td><td class="num">{{ row.leave }}</td><td class="num">{{ row.half_day }}</td><td class="num">{{ row.active_employees }}</td><td class="num">{{ "%.2f"|format(row.attendance_percentage) }}%</td>
+          {% elif att_type == "summary" %}
+          <td>{{ row.department }}</td><td><strong>{{ row.employee_code }}</strong></td><td>{{ row.employee_name }}</td><td class="num">{{ row.present }}</td><td class="num">{{ row.absent }}</td><td class="num">{{ row.late }}</td><td class="num">{{ row.leave }}</td><td class="num">{{ row.half_day }}</td><td class="num">{{ row.total }}</td><td class="num">{{ "%.2f"|format(row.attendance_percentage) }}%</td>
+          {% else %}
+          <td>{{ row.date }}</td><td>{{ row.department }}</td><td class="num">{{ row.present }}</td><td class="num">{{ row.absent }}</td><td class="num">{{ row.late }}</td><td class="num">{{ row.leave }}</td><td class="num">{{ row.half_day }}</td>
+          {% endif %}
+        </tr>
+        {% else %}
+        <tr><td colspan="10" class="verification-empty">No attendance records match these filters.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="verification-records mt-3">
+    <div class="verification-records-heading">
+      <h2><i class="bi bi-list-ul"></i> Operations detail · {{ ops_type_label }}</h2>
+      <div class="d-flex flex-wrap gap-2">
+        <a class="btn btn-sm btn-outline-success" href="{{ url_for('reports.operations_export', file_format='xlsx', type=ops_type, department_id=department_id, start_date=start_date.isoformat(), end_date=end_date.isoformat()) }}"><i class="bi bi-file-earmark-spreadsheet me-1"></i>Excel</a>
+        <a class="btn btn-sm btn-outline-danger" href="{{ url_for('reports.operations_export', file_format='pdf', type=ops_type, department_id=department_id, start_date=start_date.isoformat(), end_date=end_date.isoformat()) }}"><i class="bi bi-file-earmark-pdf me-1"></i>PDF</a>
+      </div>
+    </div>
+    <div class="table-responsive">
+      <table class="table verification-table align-middle mb-0">
+        <thead><tr>
+          <th>S.No</th>
+          {% if ops_type == "employee" %}<th>Employee ID</th><th>Employee Name</th>{% endif %}
+          <th>Department</th><th class="num">Total</th><th class="num">Verified</th><th class="num">Pending</th><th class="num">Rejected</th><th class="num">Needs Corr.</th><th class="num">Completion %</th><th>Last Updated</th>
+        </tr></thead>
+        <tbody>
+        {% for row in ops_table_rows %}
+        <tr>
+          <td>{{ loop.index }}</td>
+          {% if ops_type == "employee" %}<td><strong>{{ row.employee_code }}</strong></td><td>{{ row.employee_name }}</td>{% endif %}
+          <td>{{ row.department }}</td>
+          <td class="num">{{ row.total }}</td><td class="num">{{ row.verified }}</td><td class="num">{{ row.pending }}</td><td class="num">{{ row.rejected }}</td><td class="num">{{ row.needs_correction }}</td><td class="num">{{ row.completion_pct }}%</td>
+          <td>{{ row.last_updated }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="10" class="verification-empty">No operation records found.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <div class="verification-table-footer">
+      <span>{{ ops_table_rows|length }} row(s) · {{ start_date.isoformat() }} to {{ end_date.isoformat() }}</span>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block app_scripts %}
+<script>
+  (() => {
+    if (typeof Chart === "undefined") return;
+    const attCanvas = document.getElementById("analytics-att-chart");
+    if (attCanvas) {
+      const names = {present: "Present", absent: "Absent", late: "Late", leave: "Leave", half_day: "Half-day"};
+      const colors = {present: "#198754", absent: "#dc3545", late: "#fd7e14", leave: "#0d6efd", half_day: "#ffc107"};
+      const series = {{ att_chart_series|tojson }};
+      new Chart(attCanvas, {
+        type: "bar",
+        data: {
+          labels: {{ att_chart_labels|tojson }},
+          datasets: Object.entries(series).map(([key, values]) => ({label: names[key] || key, data: values, backgroundColor: colors[key] || "#2764e7"})
+        },
+        options: {responsive: true, maintainAspectRatio: false, scales: {y: {beginAtZero: true, ticks: {precision: 0}}}, plugins: {legend: {position: "bottom"}}}
+      });
+    }
+    const palette = {total: "#2764e7", verified: "#168267", pending: "#d28a13", rejected: "#dc3545", needs_correction: "#6d28d9"};
+    const donutEl = document.getElementById("analytics-donut-chart");
+    if (donutEl) {
+      new Chart(donutEl, {
+        type: "doughnut",
+        data: {labels: {{ ops_donut_labels|tojson }}, datasets: [{data: {{ ops_donut_values|tojson }}, backgroundColor: ["#2764e7","#168267","#d28a13","#7c5cd6","#0ea5b7","#94a3b8"], borderWidth: 2, borderColor: "#fff"}]},
+        options: {responsive: true, maintainAspectRatio: false, cutout: "68%", plugins: {legend: {display: false}}}
+      });
+    }
+    const barEl = document.getElementById("analytics-bar-chart");
+    if (barEl) {
+      const employees = {{ ops_top_employees|tojson }};
+      new Chart(barEl, {
+        type: "bar",
+        data: {
+          labels: employees.map((row) => row.employee_code),
+          datasets: ["total","verified","pending","rejected","needs_correction"].map((key) => ({label: key, data: employees.map((row) => row[key]), backgroundColor: palette[key]}))
+        },
+        options: {responsive: true, maintainAspectRatio: false, scales: {y: {beginAtZero: true, ticks: {precision: 0}}}, plugins: {legend: {position: "bottom"}}}
+      });
+    }
+  })();
+</script>
+{% endblock %}

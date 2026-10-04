@@ -30,7 +30,7 @@ def index():
         query = query.where(Department.name.ilike(f"%{search}%"))
 
     pagination = db.paginate(query, page=page, per_page=PER_PAGE, error_out=False)
-    return render_template("departments/index.html", pagination=pagination, search=search)
+    return render_template("departments/index.html", pagination=pagination, search=search, active_nav="employees")
 
 
 @departments_bp.route("/create", methods=["GET", "POST"])
@@ -69,7 +69,7 @@ def create():
         for errors in form.errors.values():
             for message in errors:
                 flash(message, "danger")
-    return render_template("departments/form.html", form=form, department=None)
+    return render_template("departments/form.html", form=form, department=None, active_nav="employees")
 
 
 @departments_bp.route("/<int:department_id>/edit", methods=["GET", "POST"])
@@ -111,7 +111,7 @@ def edit(department_id):
         for errors in form.errors.values():
             for message in errors:
                 flash(message, "danger")
-    return render_template("departments/form.html", form=form, department=department)
+    return render_template("departments/form.html", form=form, department=department, active_nav="employees")
 
 
 @departments_bp.route("/<int:department_id>/delete", methods=["POST"])

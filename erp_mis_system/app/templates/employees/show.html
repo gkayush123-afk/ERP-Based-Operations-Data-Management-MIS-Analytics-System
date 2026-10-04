@@ -1,22 +1,24 @@
-{% extends "base.html" %}
+{% extends "layout_app.html" %}
 {% block title %}{{ employee.employee_code }} · Employees{% endblock %}
-{% block content %}
-<section class="dashboard-section"><div class="container py-5">
-  <div class="mb-4"><a class="btn btn-sm btn-outline-secondary" href="{{ url_for('employees.index') }}"><i class="bi bi-arrow-left me-1"></i>All employees</a></div>
-  <div class="info-panel mb-4">
-    <div class="d-flex flex-wrap align-items-center gap-3">
-      <span class="auth-mark" aria-hidden="true"><i class="bi bi-person-fill"></i></span>
-      <div class="me-auto">
-        <h1 class="h3 mb-1">{{ employee.full_name }}</h1>
-        <p class="text-secondary mb-0">{{ employee.employee_code }} · {{ employee.designation }} · {{ employee.department.name }}</p>
+{% block app_content %}
+<div class="verification-content">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('employees.index') }}">Employees</a><i class="bi bi-chevron-right"></i><span>{{ employee.employee_code }}</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-person-fill"></i></span>
+      <div>
+        <h1>{{ employee.full_name }}</h1>
+        <p>{{ employee.employee_code }} · {{ employee.designation }} · {{ employee.department.name }}</p>
       </div>
-      <span class="badge {% if employee.status == 'active' %}text-bg-success{% else %}text-bg-secondary{% endif %}">{{ employee.status|title }}</span>
-      <div class="d-flex gap-2">
-        <a class="btn btn-outline-primary btn-sm" href="{{ url_for('employees.edit', employee_id=employee.id) }}">Edit</a>
-        {% if current_user.role == "admin" %}
-        <form method="post" action="{{ url_for('employees.delete', employee_id=employee.id) }}" data-confirm="Soft-delete this employee?"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-outline-danger btn-sm" type="submit">Delete</button></form>
-        {% endif %}
-      </div>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <a class="btn btn-outline-primary btn-sm" href="{{ url_for('employees.edit', employee_id=employee.id) }}"><i class="bi bi-pencil me-1"></i>Edit</a>
+      {% if current_user.role == "admin" %}
+      <form method="post" action="{{ url_for('employees.delete', employee_id=employee.id) }}" data-confirm="Soft-delete this employee?">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="btn btn-outline-danger btn-sm" type="submit">Delete</button>
+      </form>
+      {% endif %}
     </div>
   </div>
 
@@ -58,5 +60,6 @@
       <p class="mb-0"><span class="badge text-bg-primary">{{ operation_counts.total }} total</span> <span class="badge text-bg-success">{{ operation_counts.verified }} verified</span> <span class="badge text-bg-warning">{{ operation_counts.pending }} pending</span> <span class="badge text-bg-danger">{{ operation_counts.rejected }} rejected</span></p>
     </div></div>
   </div>
-</div></section>
+</div>
 {% endblock %}
+{% block app_scripts %}{% endblock %}

@@ -56,4 +56,5 @@ def index():
         department_id=department_id,
         departments=departments,
         issue_filter=issue_filter,
+        active_nav="verification",
     )

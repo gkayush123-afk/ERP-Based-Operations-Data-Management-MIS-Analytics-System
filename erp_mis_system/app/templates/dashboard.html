@@ -1,15 +1,19 @@
-{% extends "base.html" %}
+{% extends "layout_app.html" %}
 {% block title %}Dashboard{% endblock %}
-{% block head %}
+{% block page_head %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 {% endblock %}
-{% block content %}
-<section class="dashboard-section"><div class="container py-5">
-  <span class="eyebrow">Your workspace</span>
-  <h1 class="h2 mt-2">Welcome, {{ current_user.full_name }}</h1>
-  <p class="text-secondary">You are logged in as <span class="badge text-bg-primary">{{ current_user.role|replace('_', ' ')|title }}</span>.</p>
+{% block app_content %}
+<div class="verification-content">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><span>Dashboard</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-speedometer2"></i></span>
+      <div><h1>Dashboard</h1><p>Welcome, {{ current_user.full_name }}</p></div>
+    </div>
+  </div>
 
-  <div class="row g-3 mt-3">
+  <div class="row g-3">
     <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('employees.index') }}"><i class="bi bi-people"></i><span><strong>{{ metrics.total_employees }} active employees</strong><small>In your reporting scope</small></span></a></div>
     <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.index', attendance_date=today) }}"><i class="bi bi-calendar-check"></i><span><strong>{{ metrics.today_attendance_total }} attendance entries</strong><small>Today · {{ metrics.today_attendance.present }} present · {{ metrics.today_attendance.get('absent', 0) }} absent · {{ metrics.today_attendance.get('late', 0) }} late</small></span></a></div>
     <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.index', view='verification', verification_status='pending') }}"><i class="bi bi-hourglass-split"></i><span><strong>{{ metrics.pending_verifications }} pending verifications</strong><small>Awaiting review in your scope</small></span></a></div>
@@ -103,7 +107,7 @@
     <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.index') }}"><i class="bi bi-calendar2-week"></i><span><strong>Attendance</strong><small>View attendance records</small></span></a></div>
     <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.create') }}"><i class="bi bi-calendar-plus"></i><span><strong>Daily entry</strong><small>Submit attendance</small></span></a></div>
     {% if current_user.role in ["admin", "manager"] %}
-      <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('reports.index') }}"><i class="bi bi-bar-chart-line"></i><span><strong>MIS reports</strong><small>Analyze and export attendance</small></span></a></div>
+      <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('reports.operations') }}"><i class="bi bi-bar-chart-line"></i><span><strong>MIS reports</strong><small>Analyze and export attendance</small></span></a></div>
     {% endif %}
     {% if current_user.role == "admin" %}
       <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('users.index') }}"><i class="bi bi-person-gear"></i><span><strong>User management</strong><small>Manage users and approvals</small></span></a></div>
@@ -133,9 +137,9 @@
   </table></div>
   {% else %}<div class="empty-state"><i class="bi bi-check2-circle"></i><p class="mb-0 mt-2">There are no pending registrations.</p></div>{% endif %}
   {% endif %}
-</div></section>
+</div>
 {% endblock %}
-{% block scripts %}
+{% block app_scripts %}
 <script>
   (() => {
     const statusNames = {present: "Present", absent: "Absent", late: "Late", leave: "Leave", half_day: "Half-day"};

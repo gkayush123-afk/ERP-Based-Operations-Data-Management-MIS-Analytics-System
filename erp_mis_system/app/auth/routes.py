@@ -6,7 +6,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from ..extensions import db
+from ..extensions import db, limiter
 from ..models import AuditLog, Department, User
 from ..utils.audit import log_action
 from ..utils.decorators import roles_required
@@ -28,6 +28,7 @@ def flash_form_errors(form):
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
+@limiter.limit(lambda: current_app.config["RATELIMIT_LOGIN"], methods=["POST"])
 def login():
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
@@ -155,6 +156,7 @@ def login():
 
 
 @auth_bp.route("/register", methods=["GET", "POST"])
+@limiter.limit(lambda: current_app.config["RATELIMIT_REGISTER"], methods=["POST"])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for("main.dashboard"))
@@ -262,7 +264,7 @@ def profile():
         .order_by(AuditLog.occurred_at.desc(), AuditLog.id.desc())
         .limit(5)
     ).all()
-    return render_template("auth/profile.html", activities=activities)
+    return render_template("auth/profile.html", activities=activities, active_nav="settings")
 
 
 @auth_bp.route("/logout", methods=["POST"])
@@ -304,7 +306,7 @@ def change_password():
 
     if request.method == "POST":
         flash_form_errors(form)
-    return render_template("auth/change_password.html", form=form)
+    return render_template("auth/change_password.html", form=form, active_nav="settings")
 
 
 @auth_bp.route("/admin/approvals/<int:user_id>/<decision>", methods=["POST"])

@@ -85,7 +85,7 @@ def index():
         role_filter=role_filter,
         status_filter=status_filter,
         roles=ROLE_CHOICES,
-        statuses=sorted(STATUS_VALUES),
+        statuses=sorted(STATUS_VALUES), active_nav="settings",
     )
 
 
@@ -102,7 +102,7 @@ def create():
             "User creation is temporarily unavailable because the database cannot be reached.",
             "danger",
         )
-        return render_template("users/create.html", form=form, departments=[]), 503
+        return render_template("users/create.html", form=form, departments=[], active_nav="settings"), 503
 
     if form.validate_on_submit():
         username = form.username.data.strip()
@@ -118,7 +118,7 @@ def create():
             )
             if duplicate is not None:
                 flash("That username or email is already in use.", "danger")
-                return render_template("users/create.html", form=form, departments=departments)
+                return render_template("users/create.html", form=form, departments=departments, active_nav="settings")
 
             user = User(
                 full_name=form.full_name.data.strip(),
@@ -148,7 +148,7 @@ def create():
         except IntegrityError:
             db.session.rollback()
             flash("That username or email is already in use.", "danger")
-            return render_template("users/create.html", form=form, departments=departments)
+            return render_template("users/create.html", form=form, departments=departments, active_nav="settings")
         except OperationalError:
             db.session.rollback()
             current_app.logger.exception("Database unavailable while creating a user.")
@@ -156,14 +156,14 @@ def create():
                 "User creation could not be completed because the database cannot be reached.",
                 "danger",
             )
-            return render_template("users/create.html", form=form, departments=departments), 503
+            return render_template("users/create.html", form=form, departments=departments, active_nav="settings"), 503
 
         flash(f"User {user.username} was created. Provide the temporary password securely.", "success")
         return redirect(url_for("users.index"))
 
     if request.method == "POST":
         flash_form_errors(form)
-    return render_template("users/create.html", form=form, departments=departments)
+    return render_template("users/create.html", form=form, departments=departments, active_nav="settings")
 
 
 @users_bp.route("/<int:user_id>/edit", methods=["GET", "POST"])
@@ -197,7 +197,7 @@ def edit(user_id):
 
     if request.method == "POST":
         flash_form_errors(form)
-    return render_template("users/edit.html", form=form, user=user, departments=departments)
+    return render_template("users/edit.html", form=form, user=user, departments=departments, active_nav="settings")
 
 
 @users_bp.route("/<int:user_id>/status", methods=["POST"])
@@ -257,7 +257,7 @@ def reset_password(user_id):
 
     if request.method == "POST":
         flash_form_errors(form)
-    return render_template("users/reset_password.html", form=form, user=user)
+    return render_template("users/reset_password.html", form=form, user=user, active_nav="settings")
 
 
 @users_bp.route("/audit-logs", methods=["GET"])
@@ -284,6 +284,7 @@ def audit_logs():
         filters=filters,
         users=users,
         actions=actions,
+        active_nav="audit",
     )
 
 

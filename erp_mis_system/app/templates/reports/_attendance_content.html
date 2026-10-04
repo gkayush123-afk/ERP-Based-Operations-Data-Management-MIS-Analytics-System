@@ -1,0 +1,40 @@
+<div class="info-panel mb-4">
+  <h2 class="h5 mb-3">{{ report_titles[att_filters.type] }} chart</h2>
+  {% if att_chart_labels %}
+  <div style="height: 340px"><canvas id="attendance-chart" aria-label="{{ report_titles[att_filters.type] }} chart" role="img"></canvas></div>
+  {% else %}
+  <div class="empty-state"><i class="bi bi-bar-chart"></i><p class="mb-0 mt-2">No attendance records match these filters.</p></div>
+  {% endif %}
+</div>
+
+<div class="info-panel">
+  <h2 class="h5 mb-3">{{ report_titles[att_filters.type] }} data</h2>
+  <div class="table-responsive"><table class="table table-hover align-middle mb-0">
+    <thead><tr>
+      {% if att_filters.type == "department" %}
+        <th>Department</th><th class="text-end">Present</th><th class="text-end">Absent</th><th class="text-end">Late</th><th class="text-end">Leave</th><th class="text-end">Half-day</th><th class="text-end">Active employees</th><th class="text-end">Attendance %</th>
+      {% elif att_filters.type == "summary" %}
+        <th>Department</th><th>Employee ID</th><th>Employee Name</th><th class="text-end">Present</th><th class="text-end">Absent</th><th class="text-end">Late</th><th class="text-end">Leave</th><th class="text-end">Half-day</th><th class="text-end">Total</th><th class="text-end">Attendance %</th>
+      {% else %}
+        <th>Date</th><th>Department</th><th class="text-end">Present</th><th class="text-end">Absent</th><th class="text-end">Late</th><th class="text-end">Leave</th><th class="text-end">Half-day</th>
+      {% endif %}
+    </tr></thead>
+    <tbody>
+    {% for row in att_rows %}
+      <tr>
+        {% if att_filters.type == "department" %}
+          <td>{{ row.department }}</td><td class="text-end">{{ row.present }}</td><td class="text-end">{{ row.absent }}</td><td class="text-end">{{ row.late }}</td><td class="text-end">{{ row.leave }}</td><td class="text-end">{{ row.half_day }}</td><td class="text-end">{{ row.active_employees }}</td><td class="text-end">{{ "%.2f"|format(row.attendance_percentage) }}%</td>
+        {% elif att_filters.type == "summary" %}
+          <td>{{ row.department }}</td><td>{{ row.employee_code }}</td><td>{{ row.employee_name }}</td><td class="text-end">{{ row.present }}</td><td class="text-end">{{ row.absent }}</td><td class="text-end">{{ row.late }}</td><td class="text-end">{{ row.leave }}</td><td class="text-end">{{ row.half_day }}</td><td class="text-end">{{ row.total }}</td><td class="text-end">{{ "%.2f"|format(row.attendance_percentage) }}%</td>
+        {% else %}
+          <td>{{ row.date }}</td><td>{{ row.department }}</td><td class="text-end">{{ row.present }}</td><td class="text-end">{{ row.absent }}</td><td class="text-end">{{ row.late }}</td><td class="text-end">{{ row.leave }}</td><td class="text-end">{{ row.half_day }}</td>
+        {% endif %}
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="text-center text-secondary py-4">No matching data.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table></div>
+  {% if att_filters.type == "department" %}<p class="small text-secondary mt-3 mb-0">Attendance percentage = present records ÷ (active employees with a joining date on or before the period end × calendar days in the selected period).{% if att_filters.status %} Percentage is calculated across all attendance statuses, regardless of the status-count filter.{% endif %}</p>{% endif %}
+  {% if att_filters.type == "summary" %}<p class="small text-secondary mt-3 mb-0">Attendance percentage = present records ÷ all records in the selected period for that employee.</p>{% endif %}
+</div>

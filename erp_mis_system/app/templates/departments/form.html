@@ -1,14 +1,29 @@
-{% extends "base.html" %}
+{% extends "layout_app.html" %}
 {% block title %}{{ "Edit" if department else "Create" }} department{% endblock %}
-{% block content %}
-<section class="auth-section"><div class="auth-card">
-  <a class="small text-decoration-none" href="{{ url_for('departments.index') }}"><i class="bi bi-arrow-left me-1"></i>Departments</a>
-  <h1 class="h3 mt-3">{{ "Edit department" if department else "Create department" }}</h1>
-  <form method="post" data-validated-form novalidate>
-    {{ form.hidden_tag() }}
-    <div class="mb-3">{{ form.name.label(class="form-label fw-semibold") }}{{ form.name(class="form-control", required=true, maxlength="120") }}</div>
-    <div class="form-check mb-4">{{ form.is_active(class="form-check-input") }}{{ form.is_active.label(class="form-check-label") }}</div>
-    <button class="btn btn-primary" type="submit">Save department</button>
-  </form>
-</div></section>
+{% block app_content %}
+<div class="verification-content">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('departments.index') }}">Departments</a><i class="bi bi-chevron-right"></i><span>{{ "Edit" if department else "Create" }} department</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-diagram-3"></i></span>
+      <div><h1>{{ "Edit department" if department else "Create department" }}</h1><p>Manage department information.</p></div>
+    </div>
+  </div>
+  <div class="row justify-content-center">
+    <div class="col-lg-8">
+      <div class="info-panel">
+        <form method="post" data-validated-form novalidate>
+          {{ form.hidden_tag() }}
+          <div class="mb-3">{{ form.name.label(class="form-label fw-semibold") }}{{ form.name(class="form-control", required=true, maxlength="120") }}</div>
+          <div class="form-check mb-4">{{ form.is_active(class="form-check-input") }}{{ form.is_active.label(class="form-check-label") }}</div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-primary" type="submit">Save department</button>
+            <a class="btn btn-outline-secondary" href="{{ url_for('departments.index') }}">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
+{% block app_scripts %}{% endblock %}

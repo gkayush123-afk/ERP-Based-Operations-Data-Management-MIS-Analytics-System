@@ -1,21 +1,34 @@
-{% extends "base.html" %}
+{% extends "layout_app.html" %}
 {% block title %}Import employees{% endblock %}
-{% block content %}
-<section class="dashboard-section"><div class="container py-5">
-  <a class="small text-decoration-none" href="{{ url_for('employees.index') }}"><i class="bi bi-arrow-left me-1"></i>Employees</a>
-  <h1 class="h2 mt-3">Import employees from Excel</h1>
-  <p class="text-secondary">Upload an .xlsx workbook with a header row. Each row is validated and imported independently.</p>
+{% block app_content %}
+<div class="verification-content">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('employees.index') }}">Employees</a><i class="bi bi-chevron-right"></i><span>Import employees</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-file-earmark-spreadsheet"></i></span>
+      <div>
+        <h1>Import employees from Excel</h1>
+        <p class="text-secondary mb-0">Upload an .xlsx workbook with a header row. Each row is validated and imported independently.</p>
+      </div>
+    </div>
+  </div>
+
   <div class="info-panel mb-4">
     <p class="fw-semibold mb-2">Required columns (header names):</p>
     <code>employee_code, full_name, email, phone, designation, department, joining_date, status</code>
     <p class="small text-secondary mt-2 mb-0">Use YYYY-MM-DD for joining dates, active/inactive for status, and an active department name or id. Data-entry users' rows are assigned to their own department.</p>
   </div>
+
   <form class="info-panel mb-4" method="post" enctype="multipart/form-data" data-validated-form novalidate>
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <label class="form-label fw-semibold" for="file">Excel workbook (.xlsx)</label>
     <input class="form-control" type="file" id="file" name="file" accept=".xlsx" required>
-    <button class="btn btn-primary mt-3" type="submit">Import workbook</button>
+    <div class="d-flex gap-2 mt-3">
+      <button class="btn btn-primary" type="submit">Import workbook</button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('employees.index') }}">Cancel</a>
+    </div>
   </form>
+
   {% if row_results %}
   <div class="info-panel">
     <h2 class="h5">Row results</h2>
@@ -25,5 +38,6 @@
     </table></div>
   </div>
   {% endif %}
-</div></section>
+</div>
 {% endblock %}
+{% block app_scripts %}{% endblock %}
