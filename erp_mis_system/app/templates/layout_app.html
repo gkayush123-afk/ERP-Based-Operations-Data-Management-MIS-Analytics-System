@@ -35,7 +35,19 @@
       <nav>
         <a href="{{ url_for('main.dashboard') }}" class="{% if active_nav|default('') == 'dashboard' %}active{% endif %}"><i class="bi bi-house-door"></i>Dashboard</a>
         <a href="{{ url_for('employees.index') }}" class="{% if active_nav|default('') == 'employees' %}active{% endif %}"><i class="bi bi-people"></i>Employee Management</a>
-        <a href="{{ url_for('attendance.index') }}" class="{% if active_nav|default('') == 'attendance' %}active{% endif %}"><i class="bi bi-calendar-check"></i>Attendance</a>
+        {% set attendance_open = active_nav|default('') == 'attendance' %}
+        {% set attendance_endpoint = request.endpoint or '' %}
+        {% set monthly_pages = ['attendance.monthly', 'attendance.employee_history'] %}
+        <div class="verification-submenu-group">
+          <div class="verification-parent-row {% if attendance_open %}active{% endif %}">
+            <a href="{{ url_for('attendance.index') }}" class="verification-parent-link"><i class="bi bi-calendar-check"></i>Attendance</a>
+            <button class="verification-chevron" type="button" data-bs-toggle="collapse" data-bs-target="#attendance-submenu" aria-expanded="{{ 'true' if attendance_open else 'false' }}" aria-controls="attendance-submenu" aria-label="Toggle Attendance sub-menu"><i class="bi bi-chevron-down"></i></button>
+          </div>
+          <div class="verification-submenu collapse {% if attendance_open %}show{% endif %}" id="attendance-submenu">
+            <a href="{{ url_for('attendance.index') }}" class="{% if attendance_open and attendance_endpoint not in monthly_pages %}active{% endif %}">Daily Attendance</a>
+            <a href="{{ url_for('attendance.monthly') }}" class="{% if attendance_endpoint in monthly_pages %}active{% endif %}">Monthly Overview</a>
+          </div>
+        </div>
         {% if current_user.role in ["admin", "manager"] %}
         <a href="{{ url_for('verification.index') }}" class="{% if active_nav|default('') == 'verification' %}active{% endif %}" {% if active_nav|default('') == 'verification' %}aria-current="page"{% endif %}><i class="bi bi-shield-check"></i>Verification</a>
         {% endif %}
