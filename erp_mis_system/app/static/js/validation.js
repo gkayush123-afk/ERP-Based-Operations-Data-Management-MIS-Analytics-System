@@ -96,3 +96,20 @@
     });
   });
 })();
+
+// Mobile sidebar drawer (shared dashboard layout only).
+(() => {
+  const toggle = document.querySelector("[data-drawer-toggle]");
+  if (!toggle) return;
+  const closeDrawer = () => document.body.classList.remove("drawer-open");
+  toggle.addEventListener("click", () => {
+    document.body.classList.toggle("drawer-open");
+  });
+  document.querySelector("[data-drawer-overlay]")?.addEventListener("click", closeDrawer);
+  document.querySelectorAll(".verification-sidebar nav a").forEach((link) => {
+    link.addEventListener("click", closeDrawer);
+  });
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeDrawer();
+  });
+})();

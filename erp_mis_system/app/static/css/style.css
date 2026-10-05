@@ -211,7 +211,8 @@ a { color: var(--blue); }
 .verification-page > nav, .verification-page > footer { display: none !important; }
 .verification-page main { min-height: 100vh; }
 .verification-app { min-height: 100vh; color: #19324d; background: #edf4fc; }
-.verification-topbar { position: relative; z-index: 2; display: flex; min-height: 58px; align-items: center; justify-content: space-between; gap: 1rem; padding: .45rem 1.25rem; border-bottom: 1px solid #dce7f4; background: #fff; box-shadow: 0 2px 8px rgba(28, 63, 103, .05); }
+.verification-topbar { position: sticky; top: 0; z-index: 1030; display: flex; min-height: 58px; align-items: center; justify-content: space-between; gap: 1rem; padding: .45rem 1.25rem; border-bottom: 1px solid #dce7f4; background: #fff; box-shadow: 0 2px 8px rgba(28, 63, 103, .05); }
+.verification-hamburger { display: none; }
 .verification-brand { display: flex; align-items: center; gap: .55rem; color: #15395f; text-decoration: none; }
 .verification-brand-icon { display: grid; width: 35px; height: 35px; place-items: center; border-radius: 8px; color: #1268dc; background: #eef5ff; font-size: 1.3rem; }
 .verification-brand strong, .verification-brand small, .verification-account strong, .verification-account small { display: block; }
@@ -223,7 +224,10 @@ a { color: var(--blue); }
 .verification-account form { margin-left: .45rem; }
 .verification-avatar { display: grid; width: 32px; height: 32px; place-items: center; border-radius: 50%; color: #fff; background: #1671df; font-size: 1rem; }
 .verification-layout { display: grid; min-height: calc(100vh - 58px); grid-template-columns: 194px minmax(0, 1fr); }
-.verification-sidebar { display: flex; flex-direction: column; min-height: calc(100vh - 58px); padding: .8rem 0; color: #dce9f7; background: #0c2945; }
+.verification-sidebar { position: sticky; top: 58px; z-index: 1020; display: flex; flex-direction: column; height: calc(100vh - 58px); padding: .8rem 0; overflow-y: auto; overscroll-behavior: contain; color: #dce9f7; background: #0c2945; scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, .25) transparent; }
+.verification-sidebar::-webkit-scrollbar { width: 6px; }
+.verification-sidebar::-webkit-scrollbar-thumb { border-radius: 3px; background: rgba(255, 255, 255, .22); }
+.verification-overlay { display: none; }
 .verification-sidebar nav { display: grid; gap: .15rem; }
 .verification-sidebar nav a { display: flex; min-height: 40px; align-items: center; gap: .65rem; padding: .55rem .95rem; border-left: 3px solid transparent; color: #d2e0ed; font-size: .76rem; text-decoration: none; transition: background-color .15s ease, color .15s ease; }
 .verification-sidebar nav a i { width: 17px; font-size: .95rem; }
@@ -366,4 +370,19 @@ a { color: var(--blue); }
   .mobile-auth-actions { gap: .25rem; margin-right: .35rem; }
   .mobile-auth-actions .btn { padding: .3rem .4rem; font-size: .7rem; }
   .navbar-toggler { padding: .25rem .4rem; }
+}
+
+/* Fixed sidebar/topbar: anchor jumps clear the sticky top bar. */
+html { scroll-padding-top: 70px; }
+
+@media (max-width: 991.98px) {
+  .verification-layout { display: block; min-height: calc(100vh - 58px); }
+  .verification-hamburger { display: grid; width: 36px; height: 36px; flex: 0 0 36px; place-items: center; border: 1px solid #dce7f4; border-radius: 8px; color: #15395f; background: #fff; font-size: 1.25rem; cursor: pointer; }
+  .verification-sidebar { position: fixed; top: 0; bottom: 0; left: 0; z-index: 1045; width: min(272px, 84vw); height: auto; min-height: 0; padding: .8rem 0; transform: translateX(-105%); transition: transform .2s ease; }
+  body.drawer-open .verification-sidebar { transform: none; }
+  .verification-sidebar nav { display: grid; overflow: visible; }
+  .verification-sidebar nav a { min-height: 40px; flex: none; gap: .65rem; padding: .55rem .95rem; border-left: 3px solid transparent; border-radius: 0; font-size: .76rem; white-space: normal; }
+  .verification-sidebar-note { display: grid; }
+  .verification-overlay { display: block; position: fixed; inset: 0; z-index: 1040; background: rgba(9, 26, 43, .5); opacity: 0; visibility: hidden; transition: opacity .2s ease, visibility .2s ease; }
+  body.drawer-open .verification-overlay { opacity: 1; visibility: visible; }
 }

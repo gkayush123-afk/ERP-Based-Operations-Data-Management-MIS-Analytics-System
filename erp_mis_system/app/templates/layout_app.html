@@ -12,6 +12,7 @@
 {% block content %}
 <div class="verification-app">
   <header class="verification-topbar">
+    <button class="verification-hamburger" type="button" data-drawer-toggle aria-label="Open navigation menu"><i class="bi bi-list"></i></button>
     <a class="verification-brand" href="{{ url_for('main.dashboard') }}">
       <span class="verification-brand-icon"><i class="bi bi-bar-chart-fill"></i></span>
       <span><strong>ERP MIS</strong><small>Operations Data Management</small></span>
@@ -29,6 +30,7 @@
   </header>
 
   <div class="verification-layout">
+    <div class="verification-overlay" data-drawer-overlay aria-hidden="true"></div>
     <aside class="verification-sidebar" aria-label="Main navigation">
       <nav>
         <a href="{{ url_for('main.dashboard') }}" class="{% if active_nav|default('') == 'dashboard' %}active{% endif %}"><i class="bi bi-house-door"></i>Dashboard</a>
