@@ -1,6 +1,7 @@
-from flask import abort, redirect, render_template, url_for
+from flask import abort, jsonify, redirect, render_template, url_for
 from flask_login import current_user, login_required
 from datetime import date
+from sqlalchemy import text
 
 from ..extensions import db
 from ..models import User
@@ -52,6 +53,19 @@ def dashboard():
         today=date.today().isoformat(),
         active_nav="dashboard",
     )
+
+
+@main_bp.route("/health")
+def health():
+    """Liveness check that does not touch the database."""
+    return jsonify(status="ok"), 200
+
+
+@main_bp.route("/health/db")
+def health_db():
+    """Readiness check that measures a minimal database round trip."""
+    db.session.execute(text("SELECT 1"))
+    return jsonify(status="ok"), 200
 
 
 @main_bp.route("/forbidden")

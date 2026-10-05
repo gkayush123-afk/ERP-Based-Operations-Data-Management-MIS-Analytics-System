@@ -49,7 +49,11 @@ def build_data_quality_report(
     employee_ids = [employee.id for employee in employees]
     attendance_query = session.query(AttendanceRecord)
     if employee_ids:
-        attendance_query = attendance_query.filter(AttendanceRecord.employee_id.in_(employee_ids))
+        attendance_query = attendance_query.filter(
+            AttendanceRecord.employee_id.in_(employee_ids),
+            AttendanceRecord.attendance_date >= start_date,
+            AttendanceRecord.attendance_date <= end_date,
+        )
     else:
         attendance_query = attendance_query.filter(False)
     attendance = attendance_query.order_by(AttendanceRecord.id).all()

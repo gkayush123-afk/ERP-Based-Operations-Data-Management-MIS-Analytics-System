@@ -397,30 +397,43 @@ def build_dashboard_metrics(session: Session, department_id=None, today=None):
     operations_months = []
     operations_verified = []
     operations_total = []
+    month_starts = []
     month_cursor = month_start
     for _ in range(5):
         month_cursor = (month_cursor - timedelta(days=1)).replace(day=1)
     for _ in range(6):
+        month_starts.append(month_cursor)
         operations_months.append(month_cursor.strftime("%b %Y"))
-        next_month = (month_cursor.replace(day=monthrange(month_cursor.year, month_cursor.month)[1]) + timedelta(days=1))
-        month_counts = {
-            status: int(count)
-            for status, count in session.execute(
-                select(OperationRecord.status, func.count(OperationRecord.id))
-                .where(
-                    *operation_base,
-                    OperationRecord.record_date >= month_cursor,
-                    OperationRecord.record_date < next_month,
-                )
-                .group_by(OperationRecord.status)
-            )
-        }
+        month_cursor = (month_cursor.replace(day=monthrange(month_cursor.year, month_cursor.month)[1]) + timedelta(days=1))
+
+    range_start = month_starts[0]
+    last_start = month_starts[-1]
+    range_end = last_start.replace(day=monthrange(last_start.year, last_start.month)[1]) + timedelta(days=1)
+    op_year = func.extract("year", OperationRecord.record_date)
+    op_month = func.extract("month", OperationRecord.record_date)
+    monthly_operation_counts: dict[tuple[int, int], dict[str, int]] = {}
+    for report_year, report_month, status, count in session.execute(
+        select(
+            op_year.label("year"),
+            op_month.label("month"),
+            OperationRecord.status,
+            func.count(OperationRecord.id),
+        )
+        .where(
+            *operation_base,
+            OperationRecord.record_date >= range_start,
+            OperationRecord.record_date < range_end,
+        )
+        .group_by(op_year, op_month, OperationRecord.status)
+    ):
+        monthly_operation_counts.setdefault((int(report_year), int(report_month)), {})[status] = int(count)
+    for start in month_starts:
+        month_counts = monthly_operation_counts.get((start.year, start.month), {})
         month_verified = month_counts.get("verified", 0)
         operations_verified.append(month_verified)
         operations_total.append(
             month_verified + month_counts.get("pending", 0) + month_counts.get("rejected", 0)
         )
-        month_cursor = next_month
 
     activity_query = (
         select(AuditLog, User.full_name)

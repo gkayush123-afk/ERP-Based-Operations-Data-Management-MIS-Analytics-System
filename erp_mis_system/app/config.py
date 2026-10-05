@@ -38,12 +38,26 @@ def _resolve_database_uri() -> str:
         return _sqlite_fallback_uri()
 
 
+def _engine_options() -> dict:
+    """Connection-pool options. QueuePool-only knobs are skipped for SQLite."""
+    options: dict = {
+        "pool_pre_ping": True,
+        "pool_recycle": int(os.getenv("DB_POOL_RECYCLE_SECONDS", "3600")),
+    }
+    database_url = os.getenv("DATABASE_URL", "")
+    if not database_url.startswith("sqlite"):
+        options["pool_size"] = int(os.getenv("DB_POOL_SIZE", "5"))
+        options["max_overflow"] = int(os.getenv("DB_POOL_MAX_OVERFLOW", "10"))
+    return options
+
+
 class Config:
     DEBUG = False
     ALLOW_DEBUG = False
     SECRET_KEY = os.getenv("SECRET_KEY")
     SQLALCHEMY_DATABASE_URI = _resolve_database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = _engine_options()
     WTF_CSRF_TIME_LIMIT = 3600
     PERMANENT_SESSION_LIFETIME = timedelta(minutes=30)
     SESSION_COOKIE_HTTPONLY = True

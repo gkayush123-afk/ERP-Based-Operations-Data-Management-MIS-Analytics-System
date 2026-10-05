@@ -9,6 +9,8 @@ from openpyxl import Workbook, load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
 from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
+
 from ..extensions import db
 from ..models import AttendanceRecord, Department, Employee, utcnow
 from ..utils.audit import log_action
@@ -48,6 +50,11 @@ def attendance_scope_query():
         db.select(AttendanceRecord)
         .join(Employee)
         .join(Department)
+        .options(
+            selectinload(AttendanceRecord.employee).selectinload(Employee.department),
+            selectinload(AttendanceRecord.creator),
+            selectinload(AttendanceRecord.verifier),
+        )
     )
     if current_user.role in {"manager", "data_entry"}:
         query = query.where(Employee.department_id == current_user.department_id)

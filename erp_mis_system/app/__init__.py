@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from logging.handlers import RotatingFileHandler
 import os
 from pathlib import Path
@@ -44,6 +44,12 @@ def create_app(config_class=None):
     db.init_app(app)
     login_manager.init_app(app)
     csrf.init_app(app)
+    from .utils.gzip_middleware import GzipMiddleware
+
+    app.wsgi_app = GzipMiddleware(app.wsgi_app)
+    # Match the 7-day static caching in deploy/nginx/erp_mis_system.conf.
+    # Browsers still revalidate via ETag/Last-Modified after max-age expires.
+    app.config["SEND_FILE_MAX_AGE_DEFAULT"] = timedelta(days=7)
     app.config.setdefault("RATELIMIT_LOGIN", "10 per minute")
     app.config.setdefault("RATELIMIT_REGISTER", "5 per minute")
     limiter.init_app(app)

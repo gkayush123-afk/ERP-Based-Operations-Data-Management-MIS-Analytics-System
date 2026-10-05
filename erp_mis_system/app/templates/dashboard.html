@@ -1,7 +1,7 @@
 {% extends "layout_app.html" %}
 {% block title %}Dashboard{% endblock %}
 {% block page_head %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='vendor/chart.umd.min.js') }}"></script>
 {% endblock %}
 {% block app_content %}
 <div class="verification-content">

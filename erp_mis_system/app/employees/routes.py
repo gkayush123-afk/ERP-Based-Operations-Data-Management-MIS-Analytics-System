@@ -10,6 +10,7 @@ from openpyxl import load_workbook
 from openpyxl.utils.exceptions import InvalidFileException
 from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import selectinload
 from werkzeug.utils import secure_filename
 
 from ..extensions import db
@@ -63,7 +64,12 @@ def set_department_choices(form, include_department=None):
 
 
 def employee_query():
-    query = db.select(Employee).join(Department).where(Employee.deleted_at.is_(None))
+    query = (
+        db.select(Employee)
+        .join(Department)
+        .where(Employee.deleted_at.is_(None))
+        .options(selectinload(Employee.department))
+    )
     if current_user.role in {"manager", "data_entry"}:
         query = query.where(Employee.department_id == current_user.department_id)
     return query

@@ -3,6 +3,7 @@ from datetime import date
 from flask import abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user
 from sqlalchemy import func
+from sqlalchemy.orm import selectinload
 
 from ..extensions import db
 from ..models import Department, Employee, OperationRecord, User, utcnow
@@ -42,6 +43,12 @@ def scoped_base_query():
         db.select(OperationRecord)
         .join(Employee, Employee.id == OperationRecord.employee_id)
         .join(Department, Department.id == OperationRecord.department_id)
+        .options(
+            selectinload(OperationRecord.employee),
+            selectinload(OperationRecord.department),
+            selectinload(OperationRecord.submitter),
+            selectinload(OperationRecord.verifier),
+        )
     )
     if current_user.role == "manager":
         if current_user.department_id is None:
