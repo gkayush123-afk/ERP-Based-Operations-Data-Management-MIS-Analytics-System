@@ -309,6 +309,18 @@ def change_password():
     return render_template("auth/change_password.html", form=form, active_nav="settings")
 
 
+@auth_bp.route("/settings")
+@login_required
+def settings():
+    return render_template("auth/settings.html", active_nav="settings")
+
+
+@auth_bp.route("/roles")
+@login_required
+def roles():
+    return render_template("auth/roles.html", active_nav="settings")
+
+
 @auth_bp.route("/admin/approvals/<int:user_id>/<decision>", methods=["POST"])
 @roles_required("admin")
 def decide_registration(user_id, decision):

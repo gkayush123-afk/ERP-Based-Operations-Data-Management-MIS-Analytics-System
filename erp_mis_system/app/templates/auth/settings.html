@@ -1,0 +1,56 @@
+{% extends "layout_app.html" %}
+{% block title %}Settings{% endblock %}
+{% block app_content %}
+<div class="verification-content">
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><span>Settings</span></div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-gear"></i></span>
+      <div><h1>Settings</h1><p>Manage your profile, password, roles and session.</p></div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <div class="col-md-6 col-lg-4">
+      <div class="info-panel h-100 d-flex flex-column">
+        <h2 class="h5 mb-2"><i class="bi bi-person-fill me-2 text-primary"></i>Profile</h2>
+        <p class="text-secondary small mb-3">View your account details, department, role and recent activity.</p>
+        <a class="btn btn-outline-primary btn-sm mt-auto align-self-start" href="{{ url_for('auth.profile') }}">Open profile<i class="bi bi-arrow-right ms-1"></i></a>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="info-panel h-100 d-flex flex-column">
+        <h2 class="h5 mb-2"><i class="bi bi-shield-lock me-2 text-primary"></i>Change password</h2>
+        <p class="text-secondary small mb-3">Choose a strong password for your account.</p>
+        <a class="btn btn-outline-primary btn-sm mt-auto align-self-start" href="{{ url_for('auth.change_password') }}">Change password<i class="bi bi-arrow-right ms-1"></i></a>
+      </div>
+    </div>
+    <div class="col-md-6 col-lg-4">
+      <div class="info-panel h-100 d-flex flex-column">
+        <h2 class="h5 mb-2"><i class="bi bi-key me-2 text-primary"></i>Roles &amp; permissions</h2>
+        <p class="text-secondary small mb-3">See what each role (Admin, Manager, Data-entry) can access.</p>
+        <a class="btn btn-outline-primary btn-sm mt-auto align-self-start" href="{{ url_for('auth.roles') }}">View roles<i class="bi bi-arrow-right ms-1"></i></a>
+      </div>
+    </div>
+    {% if current_user.role == "admin" %}
+    <div class="col-md-6 col-lg-4">
+      <div class="info-panel h-100 d-flex flex-column">
+        <h2 class="h5 mb-2"><i class="bi bi-people me-2 text-primary"></i>User management</h2>
+        <p class="text-secondary small mb-3">Create users, assign roles, reset passwords and approve registrations.</p>
+        <a class="btn btn-outline-primary btn-sm mt-auto align-self-start" href="{{ url_for('users.index') }}">Manage users<i class="bi bi-arrow-right ms-1"></i></a>
+      </div>
+    </div>
+    {% endif %}
+    <div class="col-md-6 col-lg-4">
+      <div class="info-panel h-100 d-flex flex-column">
+        <h2 class="h5 mb-2"><i class="bi bi-box-arrow-right me-2 text-primary"></i>Log out</h2>
+        <p class="text-secondary small mb-3">End your current session on this device.</p>
+        <form class="mt-auto align-self-start" method="post" action="{{ url_for('auth.logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-outline-secondary btn-sm" type="submit">Log out</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

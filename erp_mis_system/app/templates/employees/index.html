@@ -1,9 +1,11 @@
 {% extends "layout_app.html" %}
 {% block title %}Employees{% endblock %}
-{% block page_head %}{% endblock %}
+{% block page_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/employees.css') }}">
+{% endblock %}
 {% block app_content %}
 <div class="verification-content">
-  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><span>Employees</span></div>
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><span>Employee Management</span></div>
   <div class="verification-heading">
     <div class="verification-title">
       <span class="verification-title-icon"><i class="bi bi-people"></i></span>
@@ -64,7 +66,7 @@
     </div>
   </form>
 
-  <section class="verification-records">
+  <section class="verification-records employee-records">
     <div class="verification-records-heading">
       <h2><i class="bi bi-list-ul"></i> Employee Records</h2>
     </div>
@@ -85,13 +87,13 @@
         {% for employee in pagination.items %}
           <tr>
             <td><strong>{{ employee.employee_code }}</strong></td>
-            <td>{{ employee.full_name }}<small class="d-block text-secondary">{{ employee.email }}</small></td>
+            <td class="employee-name">{{ employee.full_name }}<small class="d-block text-secondary">{{ employee.email }}</small></td>
             <td>{{ employee.designation }}</td>
             <td>{{ employee.department.name }}</td>
             <td>{{ employee.joining_date.strftime("%Y-%m-%d") }}</td>
-            <td><span class="badge {% if employee.status == 'active' %}text-bg-success{% else %}text-bg-secondary{% endif %}">{{ employee.status|title }}</span></td>
+            <td><span class="verification-status status-{{ employee.status }}">{{ employee.status|title }}</span></td>
             <td>
-              <div class="d-flex justify-content-end gap-2">
+              <div class="employee-actions">
                 <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('employees.show', employee_id=employee.id) }}">View</a>
                 <a class="btn btn-outline-primary btn-sm" href="{{ url_for('employees.edit', employee_id=employee.id) }}">Edit</a>
                 {% if current_user.role == "admin" %}

@@ -1,0 +1,54 @@
+/* Employee Management page extras. The sidebar/topbar/filter/table/card look
+ * comes from the shared .verification-* rules in style.css; this file only
+ * adds employee-specific bits (status pills, small responsive tweaks). */
+
+.verification-status.status-active {
+  color: #08724e;
+  background: #d9f3e7;
+}
+
+.verification-status.status-inactive {
+  color: #5b6b7d;
+  background: #e8edf3;
+}
+
+/* Keep the employee list inside the main area: the card scrolls, the page
+ * itself must not scroll horizontally. */
+.employee-records .table-responsive {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.employee-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.employee-actions form {
+  margin: 0;
+}
+
+.employee-actions .btn-sm {
+  padding: 0.27rem 0.5rem;
+  font-size: 0.61rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+.employee-name small {
+  font-size: 0.6rem;
+}
+
+/* Detail / form / import cards reuse the shared white rounded card style. */
+.employee-detail-card h2,
+.employee-form-card h2 {
+  color: #26445f;
+}
+
+@media (max-width: 767.98px) {
+  .employee-actions {
+    justify-content: flex-start;
+  }
+}

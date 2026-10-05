@@ -1,8 +1,11 @@
 {% extends "layout_app.html" %}
 {% block title %}Import employees{% endblock %}
+{% block page_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/employees.css') }}">
+{% endblock %}
 {% block app_content %}
 <div class="verification-content">
-  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('employees.index') }}">Employees</a><i class="bi bi-chevron-right"></i><span>Import employees</span></div>
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('employees.index') }}">Employee Management</a><i class="bi bi-chevron-right"></i><span>Import employees</span></div>
   <div class="verification-heading">
     <div class="verification-title">
       <span class="verification-title-icon"><i class="bi bi-file-earmark-spreadsheet"></i></span>

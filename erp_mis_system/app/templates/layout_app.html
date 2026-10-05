@@ -45,7 +45,7 @@
         {% if current_user.role == "admin" %}
         <a href="{{ url_for('users.audit_logs') }}" class="{% if active_nav|default('') == 'audit' %}active{% endif %}"><i class="bi bi-clock-history"></i>Audit Trail</a>
         {% endif %}
-        <a href="{{ url_for('auth.change_password') }}" class="{% if active_nav|default('') == 'settings' %}active{% endif %}"><i class="bi bi-gear"></i>Settings</a>
+        <a href="{{ url_for('auth.settings') }}" class="{% if active_nav|default('') == 'settings' %}active{% endif %}"><i class="bi bi-gear"></i>Settings</a>
       </nav>
       <div class="verification-sidebar-note">
         <i class="bi bi-file-earmark-check"></i>

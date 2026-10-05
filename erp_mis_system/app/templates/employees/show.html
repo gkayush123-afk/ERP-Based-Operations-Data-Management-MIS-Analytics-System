@@ -1,8 +1,11 @@
 {% extends "layout_app.html" %}
 {% block title %}{{ employee.employee_code }} · Employees{% endblock %}
+{% block page_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/employees.css') }}">
+{% endblock %}
 {% block app_content %}
 <div class="verification-content">
-  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('employees.index') }}">Employees</a><i class="bi bi-chevron-right"></i><span>{{ employee.employee_code }}</span></div>
+  <div class="verification-breadcrumb"><a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a><i class="bi bi-chevron-right"></i><a href="{{ url_for('employees.index') }}">Employee Management</a><i class="bi bi-chevron-right"></i><span>{{ employee.employee_code }}</span></div>
   <div class="verification-heading">
     <div class="verification-title">
       <span class="verification-title-icon"><i class="bi bi-person-fill"></i></span>
@@ -23,7 +26,7 @@
   </div>
 
   <div class="row g-4">
-    <div class="col-lg-6"><div class="info-panel h-100">
+    <div class="col-lg-6"><div class="info-panel employee-detail-card h-100">
       <h2 class="h5 mb-3">Employee details</h2>
       <dl class="row mb-0">
         <dt class="col-sm-4 text-secondary">Employee ID</dt><dd class="col-sm-8">{{ employee.employee_code }}</dd>
@@ -33,7 +36,7 @@
         <dt class="col-sm-4 text-secondary">Designation</dt><dd class="col-sm-8">{{ employee.designation }}</dd>
         <dt class="col-sm-4 text-secondary">Department</dt><dd class="col-sm-8">{{ employee.department.name }}</dd>
         <dt class="col-sm-4 text-secondary">Joining date</dt><dd class="col-sm-8">{{ employee.joining_date.strftime("%Y-%m-%d") }}</dd>
-        <dt class="col-sm-4 text-secondary">Status</dt><dd class="col-sm-8">{{ employee.status|title }}</dd>
+        <dt class="col-sm-4 text-secondary">Status</dt><dd class="col-sm-8"><span class="verification-status status-{{ employee.status }}">{{ employee.status|title }}</span></dd>
       </dl>
       <div class="d-flex flex-wrap gap-2 mt-3">
         <a class="btn btn-outline-primary btn-sm" href="{{ url_for('attendance.employee_history', employee_id=employee.id) }}"><i class="bi bi-calendar2-week me-1"></i>Attendance history</a>
@@ -42,7 +45,7 @@
         {% endif %}
       </div>
     </div></div>
-    <div class="col-lg-6"><div class="info-panel h-100">
+    <div class="col-lg-6"><div class="info-panel employee-detail-card h-100">
       <h2 class="h5 mb-3">Recent attendance</h2>
       {% if recent_attendance %}
       <div class="table-responsive"><table class="table table-sm align-middle mb-0">
