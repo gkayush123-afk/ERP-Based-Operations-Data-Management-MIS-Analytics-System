@@ -1,0 +1,30 @@
+<!-- Employment Details Section -->
+<div class="personal-data-card" data-section="employment">
+  <div class="card-header">
+    <h2 class="h5 mb-0"><i class="bi bi-briefcase me-2"></i>Employment Details</h2>
+  </div>
+  <div class="card-body">
+    <div class="detail-grid">
+      <div class="detail-item">
+        <span class="detail-label">Designation</span>
+        <span class="detail-value">{{ employee.designation }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Department</span>
+        <span class="detail-value">{{ employee.department.name }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Date of Joining</span>
+        <span class="detail-value">{{ employee.joining_date.strftime("%Y-%m-%d") }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Employee Status</span>
+        <span class="detail-value">
+          <span class="badge rounded-pill text-bg-{{ 'success' if employee.status == 'active' else 'secondary' }}">
+            {{ employee.status|title }}
+          </span>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

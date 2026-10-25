@@ -1,0 +1,385 @@
+{% extends "layout_app.html" %}
+{% block title %}Edit {{ employee.employee_code }} · Personal Data{% endblock %}
+{% block page_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/employees.css') }}">
+<style>
+  .form-section {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    border: 1px solid #e9ecef;
+    margin-bottom: 1.5rem;
+  }
+  .form-section .card-header {
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    border-radius: 12px 12px 0 0 !important;
+    padding: 1rem 1.25rem;
+  }
+  .form-section .card-body {
+    padding: 1.25rem;
+  }
+  .photo-preview-edit {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #e9ecef;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+  .photo-placeholder-edit {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: #e9ecef;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #adb5bd;
+    font-size: 2.5rem;
+  }
+  .form-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 0.35rem;
+  }
+  .form-control:focus, .form-select:focus {
+    border-color: #2764e7;
+    box-shadow: 0 0 0 0.2rem rgba(39, 100, 231, 0.15);
+  }
+  .btn-group-actions {
+    position: sticky;
+    bottom: 0;
+    background: #fff;
+    border-top: 1px solid #e9ecef;
+    padding: 1rem 1.25rem;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+  }
+</style>
+{% endblock %}
+{% block app_content %}
+<div class="verification-content">
+  <div class="verification-breadcrumb">
+    <a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a>
+    <i class="bi bi-chevron-right"></i>
+    <a href="{{ url_for('employees.index') }}">Employee Management</a>
+    <i class="bi bi-chevron-right"></i>
+    <a href="{{ url_for('employees.show', employee_id=employee.id) }}">{{ employee.employee_code }}</a>
+    <i class="bi bi-chevron-right"></i>
+    <a href="{{ url_for('employees.personal_data', employee_id=employee.id) }}">Personal Data</a>
+    <i class="bi bi-chevron-right"></i>
+    <span>Edit</span>
+  </div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-pencil-square"></i></span>
+      <div>
+        <h1>Edit Personal Data</h1>
+        <p>{{ employee.full_name }} · {{ employee.employee_code }}</p>
+      </div>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+      <a class="btn btn-outline-secondary" href="{{ url_for('employees.personal_data', employee_id=employee.id) }}">
+        <i class="bi bi-arrow-left me-1"></i>Cancel
+      </a>
+    </div>
+  </div>
+
+  <form method="post" action="{{ url_for('employees.personal_data_edit', employee_id=employee.id) }}" novalidate>
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <!-- Employee Photo & Basic Info -->
+    <div class="form-section">
+      <div class="card-header">
+        <h2 class="h5 mb-0"><i class="bi bi-image me-2"></i>Photo & Basic Info</h2>
+      </div>
+      <div class="card-body">
+        <div class="row g-3 align-items-center">
+          <div class="col-auto">
+            {% if employee.photo_url %}
+              <img src="{{ employee.photo_url }}" alt="{{ employee.full_name }}" class="photo-preview-edit">
+            {% else %}
+              <div class="photo-placeholder-edit"><i class="bi bi-person"></i></div>
+            {% endif %}
+          </div>
+          <div class="col">
+            <div class="row g-3">
+              <div class="col-md-6">
+                {{ form.employee_code.label(class="form-label") }}
+                {{ form.employee_code(class="form-control") }}
+                {% if form.employee_code.errors %}
+                  <div class="text-danger small mt-1">{{ form.employee_code.errors[0] }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                {{ form.full_name.label(class="form-label") }}
+                {{ form.full_name(class="form-control") }}
+                {% if form.full_name.errors %}
+                  <div class="text-danger small mt-1">{{ form.full_name.errors[0] }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                {{ form.email.label(class="form-label") }}
+                {{ form.email(class="form-control", type="email") }}
+                {% if form.email.errors %}
+                  <div class="text-danger small mt-1">{{ form.email.errors[0] }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                {{ form.phone.label(class="form-label") }}
+                {{ form.phone(class="form-control", placeholder="+91 98765 43210") }}
+                {% if form.phone.errors %}
+                  <div class="text-danger small mt-1">{{ form.phone.errors[0] }}</div>
+                {% endif %}
+              </div>
+              <div class="col-md-6">
+                {{ form.photo_url.label(class="form-label") }}
+                {{ form.photo_url(class="form-control", placeholder="https://example.com/photo.jpg") }}
+                {% if form.photo_url.errors %}
+                  <div class="text-danger small mt-1">{{ form.photo_url.errors[0] }}</div>
+                {% endif %}
+                <div class="form-text">Enter a URL to the employee's photo</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Personal Details -->
+    <div class="form-section">
+      <div class="card-header">
+        <h2 class="h5 mb-0"><i class="bi bi-person-lines-fill me-2"></i>Personal Details</h2>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-4">
+            {{ form.date_of_birth.label(class="form-label") }}
+            {{ form.date_of_birth(class="form-control", type="date") }}
+            {% if form.date_of_birth.errors %}
+              <div class="text-danger small mt-1">{{ form.date_of_birth.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.gender.label(class="form-label") }}
+            {{ form.gender(class="form-select") }}
+            {% if form.gender.errors %}
+              <div class="text-danger small mt-1">{{ form.gender.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.blood_group.label(class="form-label") }}
+            {{ form.blood_group(class="form-select") }}
+            {% if form.blood_group.errors %}
+              <div class="text-danger small mt-1">{{ form.blood_group.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.marital_status.label(class="form-label") }}
+            {{ form.marital_status(class="form-select") }}
+            {% if form.marital_status.errors %}
+              <div class="text-danger small mt-1">{{ form.marital_status.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.nationality.label(class="form-label") }}
+            {{ form.nationality(class="form-control", placeholder="Indian") }}
+            {% if form.nationality.errors %}
+              <div class="text-danger small mt-1">{{ form.nationality.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.id_number.label(class="form-label") }}
+            {{ form.id_number(class="form-control", placeholder="Passport/Driving License number") }}
+            {% if form.id_number.errors %}
+              <div class="text-danger small mt-1">{{ form.id_number.errors[0] }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact & Address -->
+    <div class="form-section">
+      <div class="card-header">
+        <h2 class="h5 mb-0"><i class="bi bi-geo-alt me-2"></i>Contact & Address</h2>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-12">
+            {{ form.address.label(class="form-label") }}
+            {{ form.address(class="form-control", rows="3", placeholder="Complete residential address") }}
+            {% if form.address.errors %}
+              <div class="text-danger small mt-1">{{ form.address.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.emergency_contact_name.label(class="form-label") }}
+            {{ form.emergency_contact_name(class="form-control", placeholder="Contact person name") }}
+            {% if form.emergency_contact_name.errors %}
+              <div class="text-danger small mt-1">{{ form.emergency_contact_name.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.emergency_contact_phone.label(class="form-label") }}
+            {{ form.emergency_contact_phone(class="form-control", placeholder="+91 98765 43210") }}
+            {% if form.emergency_contact_phone.errors %}
+              <div class="text-danger small mt-1">{{ form.emergency_contact_phone.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.emergency_contact_relationship.label(class="form-label") }}
+            {{ form.emergency_contact_relationship(class="form-control", placeholder="Father, Mother, Spouse, etc.") }}
+            {% if form.emergency_contact_relationship.errors %}
+              <div class="text-danger small mt-1">{{ form.emergency_contact_relationship.errors[0] }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Employment Details -->
+    <div class="form-section">
+      <div class="card-header">
+        <h2 class="h5 mb-0"><i class="bi bi-briefcase me-2"></i>Employment Details</h2>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            {{ form.designation.label(class="form-label") }}
+            {{ form.designation(class="form-control") }}
+            {% if form.designation.errors %}
+              <div class="text-danger small mt-1">{{ form.designation.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            {{ form.department_id.label(class="form-label") }}
+            {{ form.department_id(class="form-select") }}
+            {% if form.department_id.errors %}
+              <div class="text-danger small mt-1">{{ form.department_id.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.joining_date.label(class="form-label") }}
+            {{ form.joining_date(class="form-control", type="date") }}
+            {% if form.joining_date.errors %}
+              <div class="text-danger small mt-1">{{ form.joining_date.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.status.label(class="form-label") }}
+            {{ form.status(class="form-select") }}
+            {% if form.status.errors %}
+              <div class="text-danger small mt-1">{{ form.status.errors[0] }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bank & Statutory Details -->
+    <div class="form-section">
+      <div class="card-header">
+        <h2 class="h5 mb-0"><i class="bi bi-bank me-2"></i>Bank & Statutory Details</h2>
+      </div>
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            {{ form.bank_account_number.label(class="form-label") }}
+            {{ form.bank_account_number(class="form-control", placeholder="Account number") }}
+            {% if form.bank_account_number.errors %}
+              <div class="text-danger small mt-1">{{ form.bank_account_number.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-6">
+            {{ form.bank_name.label(class="form-label") }}
+            {{ form.bank_name(class="form-control", placeholder="Bank name") }}
+            {% if form.bank_name.errors %}
+              <div class="text-danger small mt-1">{{ form.bank_name.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.bank_ifsc.label(class="form-label") }}
+            {{ form.bank_ifsc(class="form-control", placeholder="IFSC code") }}
+            {% if form.bank_ifsc.errors %}
+              <div class="text-danger small mt-1">{{ form.bank_ifsc.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.pan_number.label(class="form-label") }}
+            {{ form.pan_number(class="form-control", placeholder="ABCDE1234F") }}
+            {% if form.pan_number.errors %}
+              <div class="text-danger small mt-1">{{ form.pan_number.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.aadhar_number.label(class="form-label") }}
+            {{ form.aadhar_number(class="form-control", placeholder="1234 5678 9012") }}
+            {% if form.aadhar_number.errors %}
+              <div class="text-danger small mt-1">{{ form.aadhar_number.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.pf_number.label(class="form-label") }}
+            {{ form.pf_number(class="form-control", placeholder="PF account number") }}
+            {% if form.pf_number.errors %}
+              <div class="text-danger small mt-1">{{ form.pf_number.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.uan_number.label(class="form-label") }}
+            {{ form.uan_number(class="form-control", placeholder="Universal Account Number") }}
+            {% if form.uan_number.errors %}
+              <div class="text-danger small mt-1">{{ form.uan_number.errors[0] }}</div>
+            {% endif %}
+          </div>
+          <div class="col-md-4">
+            {{ form.esi_number.label(class="form-label") }}
+            {{ form.esi_number(class="form-control", placeholder="ESI number") }}
+            {% if form.esi_number.errors %}
+              <div class="text-danger small mt-1">{{ form.esi_number.errors[0] }}</div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fixed Action Buttons -->
+    <div class="btn-group-actions d-flex justify-content-end gap-2">
+      <a class="btn btn-outline-secondary" href="{{ url_for('employees.personal_data', employee_id=employee.id) }}">
+        <i class="bi bi-x me-1"></i>Cancel
+      </a>
+      <button class="btn btn-primary" type="submit">
+        <i class="bi bi-save me-1"></i>Save Changes
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block app_scripts %}
+<script>
+  // Auto-format PAN number to uppercase
+  document.getElementById('pan_number')?.addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase();
+  });
+
+  // Auto-format IFSC to uppercase
+  document.getElementById('bank_ifsc')?.addEventListener('input', function(e) {
+    e.target.value = e.target.value.toUpperCase();
+  });
+
+  // Auto-format UAN to remove spaces
+  document.getElementById('uan_number')?.addEventListener('input', function(e) {
+    e.target.value = e.target.value.replace(/\s/g, '');
+  });
+
+  // Aadhar formatting
+  document.getElementById('aadhar_number')?.addEventListener('input', function(e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length > 4) value = value.slice(0,4) + ' ' + value.slice(4);
+    if (value.length > 9) value = value.slice(0,9) + ' ' + value.slice(9);
+    e.target.value = value;
+  });
+</script>
+{% endblock %}

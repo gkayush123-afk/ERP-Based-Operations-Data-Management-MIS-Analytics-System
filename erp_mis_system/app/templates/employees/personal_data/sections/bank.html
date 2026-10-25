@@ -1,0 +1,58 @@
+<!-- Bank & Statutory Details Section -->
+<div class="personal-data-card" data-section="bank">
+  <div class="card-header">
+    <h2 class="h5 mb-0"><i class="bi bi-bank me-2"></i>Bank & Statutory Details</h2>
+  </div>
+  <div class="card-body">
+    <div class="detail-grid">
+      <div class="detail-item">
+        <span class="detail-label">Bank Account Number</span>
+        <span class="detail-value {% if not employee.bank_account_number %}empty{% endif %}">
+          {% if employee.bank_account_number %}{{ employee.bank_account_number }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Bank Name</span>
+        <span class="detail-value {% if not employee.bank_name %}empty{% endif %}">
+          {% if employee.bank_name %}{{ employee.bank_name }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">IFSC Code</span>
+        <span class="detail-value {% if not employee.bank_ifsc %}empty{% endif %}">
+          {% if employee.bank_ifsc %}{{ employee.bank_ifsc }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">PAN Number</span>
+        <span class="detail-value {% if not employee.pan_number %}empty{% endif %}">
+          {% if employee.pan_number %}{{ employee.pan_number }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Aadhar Number</span>
+        <span class="detail-value {% if not employee.aadhar_number %}empty{% endif %}">
+          {% if employee.aadhar_number %}{{ employee.aadhar_number }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">PF Number</span>
+        <span class="detail-value {% if not employee.pf_number %}empty{% endif %}">
+          {% if employee.pf_number %}{{ employee.pf_number }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">UAN Number</span>
+        <span class="detail-value {% if not employee.uan_number %}empty{% endif %}">
+          {% if employee.uan_number %}{{ employee.uan_number }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">ESI Number</span>
+        <span class="detail-value {% if not employee.esi_number %}empty{% endif %}">
+          {% if employee.esi_number %}{{ employee.esi_number }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

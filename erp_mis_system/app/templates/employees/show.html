@@ -40,6 +40,7 @@
       </dl>
       <div class="d-flex flex-wrap gap-2 mt-3">
         <a class="btn btn-outline-primary btn-sm" href="{{ url_for('attendance.employee_history', employee_id=employee.id) }}"><i class="bi bi-calendar2-week me-1"></i>Attendance history</a>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('employees.personal_data', employee_id=employee.id) }}"><i class="bi bi-person-vcard me-1"></i>Personal Data</a>
         {% if current_user.role in ["admin", "manager"] %}
         <a class="btn btn-outline-primary btn-sm" href="{{ url_for('verification.index', employee_code=employee.employee_code) }}"><i class="bi bi-shield-check me-1"></i>Verification records</a>
         {% endif %}

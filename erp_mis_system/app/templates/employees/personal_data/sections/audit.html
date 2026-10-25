@@ -1,0 +1,22 @@
+<!-- Record Information Section -->
+<div class="personal-data-card" data-section="audit">
+  <div class="card-header">
+    <h2 class="h5 mb-0"><i class="bi bi-clock-history me-2"></i>Record Information</h2>
+  </div>
+  <div class="card-body">
+    <div class="detail-grid">
+      <div class="detail-item">
+        <span class="detail-label">Created By</span>
+        <span class="detail-value">{{ employee.creator.full_name if employee.creator else "—" }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Created At</span>
+        <span class="detail-value">{{ employee.created_at.strftime("%Y-%m-%d %H:%M") if employee.created_at else "—" }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Last Updated</span>
+        <span class="detail-value">{{ employee.updated_at.strftime("%Y-%m-%d %H:%M") if employee.updated_at else "—" }}</span>
+      </div>
+    </div>
+  </div>
+</div>

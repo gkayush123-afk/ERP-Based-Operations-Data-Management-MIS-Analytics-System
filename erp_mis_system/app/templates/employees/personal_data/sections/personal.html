@@ -1,0 +1,46 @@
+<!-- Personal Details Section -->
+<div class="personal-data-card" data-section="personal">
+  <div class="card-header">
+    <h2 class="h5 mb-0"><i class="bi bi-person-lines-fill me-2"></i>Personal Details</h2>
+  </div>
+  <div class="card-body">
+    <div class="detail-grid">
+      <div class="detail-item">
+        <span class="detail-label">Date of Birth</span>
+        <span class="detail-value {% if not employee.date_of_birth %}empty{% endif %}">
+          {% if employee.date_of_birth %}{{ employee.date_of_birth.strftime("%Y-%m-%d") }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Gender</span>
+        <span class="detail-value {% if not employee.gender %}empty{% endif %}">
+          {% if employee.gender %}{{ employee.gender|title }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Blood Group</span>
+        <span class="detail-value {% if not employee.blood_group %}empty{% endif %}">
+          {% if employee.blood_group %}{{ employee.blood_group }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Marital Status</span>
+        <span class="detail-value {% if not employee.marital_status %}empty{% endif %}">
+          {% if employee.marital_status %}{{ employee.marital_status|title }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Nationality</span>
+        <span class="detail-value {% if not employee.nationality %}empty{% endif %}">
+          {% if employee.nationality %}{{ employee.nationality }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">ID Number</span>
+        <span class="detail-value {% if not employee.id_number %}empty{% endif %}">
+          {% if employee.id_number %}{{ employee.id_number }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,38 @@
+<!-- Photo & Basic Info Section -->
+<div class="personal-data-card h-100" data-section="basic">
+  <div class="card-header">
+    <h2 class="h5 mb-0"><i class="bi bi-image me-2"></i>Photo & Basic Info</h2>
+  </div>
+  <div class="card-body text-center">
+    {% if employee.photo_url %}
+      <img src="{{ employee.photo_url }}" alt="{{ employee.full_name }}" class="photo-preview mb-3" loading="lazy">
+    {% else %}
+      <div class="photo-placeholder mb-3 mx-auto"><i class="bi bi-person"></i></div>
+    {% endif %}
+    <h3 class="h4 mb-1">{{ employee.full_name }}</h3>
+    <p class="text-secondary mb-2">{{ employee.employee_code }}</p>
+    <p class="text-secondary small mb-3">{{ employee.designation }} · {{ employee.department.name }}</p>
+    <div class="detail-grid text-start">
+      <div class="detail-item">
+        <span class="detail-label">Employee ID</span>
+        <span class="detail-value">{{ employee.employee_code }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Email</span>
+        <span class="detail-value">{{ employee.email }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Phone</span>
+        <span class="detail-value">{{ employee.phone or "—" }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Status</span>
+        <span class="detail-value">
+          <span class="badge rounded-pill text-bg-{{ 'success' if employee.status == 'active' else 'secondary' }}">
+            {{ employee.status|title }}
+          </span>
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

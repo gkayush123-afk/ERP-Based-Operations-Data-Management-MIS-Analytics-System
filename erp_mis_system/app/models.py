@@ -105,6 +105,14 @@ class Employee(db.Model):
             "status IN ('active', 'inactive')",
             name="ck_employees_status",
         ),
+        db.CheckConstraint(
+            "gender IN ('male', 'female', 'other')",
+            name="ck_employees_gender",
+        ),
+        db.CheckConstraint(
+            "marital_status IN ('single', 'married', 'divorced', 'widowed')",
+            name="ck_employees_marital_status",
+        ),
         Index("ix_employees_department_active", "department_id", "status", "deleted_at"),
     )
 
@@ -112,7 +120,18 @@ class Employee(db.Model):
     employee_code = db.Column(db.String(40), nullable=False, unique=True, index=True)
     full_name = db.Column(db.String(160), nullable=False)
     email = db.Column(db.String(254), nullable=False)
+    date_of_birth = db.Column(db.Date, nullable=True)
+    gender = db.Column(db.String(20), nullable=True)
     phone = db.Column(db.String(30), nullable=True)
+    address = db.Column(db.Text, nullable=True)
+    emergency_contact_name = db.Column(db.String(160), nullable=True)
+    emergency_contact_phone = db.Column(db.String(30), nullable=True)
+    emergency_contact_relationship = db.Column(db.String(50), nullable=True)
+    photo_url = db.Column(db.String(500), nullable=True)
+    blood_group = db.Column(db.String(10), nullable=True)
+    marital_status = db.Column(db.String(20), nullable=True)
+    nationality = db.Column(db.String(80), nullable=True)
+    id_number = db.Column(db.String(60), nullable=True)
     designation = db.Column(db.String(120), nullable=False)
     department_id = db.Column(
         ID_TYPE,
@@ -122,6 +141,14 @@ class Employee(db.Model):
     )
     joining_date = db.Column(db.Date, nullable=False)
     status = db.Column(db.String(20), nullable=False, default="active", index=True)
+    bank_account_number = db.Column(db.String(60), nullable=True)
+    bank_name = db.Column(db.String(120), nullable=True)
+    bank_ifsc = db.Column(db.String(20), nullable=True)
+    pan_number = db.Column(db.String(20), nullable=True)
+    aadhar_number = db.Column(db.String(20), nullable=True)
+    pf_number = db.Column(db.String(40), nullable=True)
+    uan_number = db.Column(db.String(40), nullable=True)
+    esi_number = db.Column(db.String(40), nullable=True)
     created_by = db.Column(
         ID_TYPE,
         db.ForeignKey("users.id", ondelete="SET NULL"),

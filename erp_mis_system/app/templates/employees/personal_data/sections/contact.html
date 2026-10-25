@@ -1,0 +1,34 @@
+<!-- Contact & Address Section -->
+<div class="personal-data-card" data-section="contact">
+  <div class="card-header">
+    <h2 class="h5 mb-0"><i class="bi bi-geo-alt me-2"></i>Contact & Address</h2>
+  </div>
+  <div class="card-body">
+    <div class="detail-grid">
+      <div class="detail-item" style="grid-column: 1 / -1;">
+        <span class="detail-label">Residential Address</span>
+        <span class="detail-value {% if not employee.address %}empty{% endif %}">
+          {% if employee.address %}{{ employee.address }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Emergency Contact Name</span>
+        <span class="detail-value {% if not employee.emergency_contact_name %}empty{% endif %}">
+          {% if employee.emergency_contact_name %}{{ employee.emergency_contact_name }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Emergency Contact Phone</span>
+        <span class="detail-value {% if not employee.emergency_contact_phone %}empty{% endif %}">
+          {% if employee.emergency_contact_phone %}{{ employee.emergency_contact_phone }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Relationship</span>
+        <span class="detail-value {% if not employee.emergency_contact_relationship %}empty{% endif %}">
+          {% if employee.emergency_contact_relationship %}{{ employee.emergency_contact_relationship }}{% else %}Not provided{% endif %}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

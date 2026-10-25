@@ -103,7 +103,8 @@
   </div>
 
   <div class="row g-3 mt-3">
-    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('employees.index') }}"><i class="bi bi-person-vcard"></i><span><strong>Employees</strong><small>Browse employee records</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('employees.index') }}"><i class="bi bi-people"></i><span><strong>Employees</strong><small>Browse employee records</small></span></a></div>
+    <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('employees.personal_data_list') }}"><i class="bi bi-person-vcard"></i><span><strong>Personal Data</strong><small>View employee personal information</small></span></a></div>
     <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.index') }}"><i class="bi bi-calendar2-week"></i><span><strong>Attendance</strong><small>View attendance records</small></span></a></div>
     <div class="col-sm-6 col-xl-3"><a class="dashboard-card" href="{{ url_for('attendance.create') }}"><i class="bi bi-calendar-plus"></i><span><strong>Daily entry</strong><small>Submit attendance</small></span></a></div>
     {% if current_user.role in ["admin", "manager"] %}

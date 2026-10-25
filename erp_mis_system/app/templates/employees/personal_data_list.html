@@ -1,0 +1,105 @@
+{% extends "layout_app.html" %}
+{% block title %}Personal Data{% endblock %}
+{% block page_head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/employees.css') }}">
+{% endblock %}
+{% block app_content %}
+<div class="verification-content">
+  <div class="verification-breadcrumb">
+    <a href="{{ url_for('main.dashboard') }}"><i class="bi bi-house-door"></i> Home</a>
+    <i class="bi bi-chevron-right"></i>
+    <span>Personal Data</span>
+  </div>
+  <div class="verification-heading">
+    <div class="verification-title">
+      <span class="verification-title-icon"><i class="bi bi-person-vcard"></i></span>
+      <div>
+        <h1>Employee Personal Data</h1>
+        <p>Select an employee to view their complete personal information</p>
+      </div>
+    </div>
+  </div>
+
+  <form class="verification-filter" method="get" action="{{ url_for('employees.personal_data_list') }}">
+    <div class="verification-filter-field">
+      <label for="q">Search</label>
+      <input class="form-control" id="q" name="q" value="{{ search }}" placeholder="Code, name, email, designation">
+    </div>
+    {% if current_user.role != "data_entry" %}
+    <div class="verification-filter-field">
+      <label for="department_id">Department</label>
+      <select class="form-select" id="department_id" name="department_id">
+        <option value="">All</option>
+        {% for department in departments %}
+          <option value="{{ department.id }}" {% if department_filter == department.id %}selected{% endif %}>{{ department.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    <div class="verification-filter-actions">
+      <button class="btn btn-primary" type="submit"><i class="bi bi-search"></i><span>Apply</span></button>
+      <a class="btn btn-outline-secondary" href="{{ url_for('employees.personal_data_list') }}"><i class="bi bi-arrow-counterclockwise"></i><span>Clear</span></a>
+    </div>
+  </form>
+
+  <section class="verification-records employee-records">
+    <div class="verification-records-heading">
+      <h2><i class="bi bi-list-ul"></i> Employees</h2>
+    </div>
+    <div class="table-responsive">
+      <table class="table verification-table align-middle mb-0">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Name / Email</th>
+            <th>Designation</th>
+            <th>Department</th>
+            <th>Joining Date</th>
+            <th>Status</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for employee in pagination.items %}
+          <tr>
+            <td><strong>{{ employee.employee_code }}</strong></td>
+            <td class="employee-name">{{ employee.full_name }}<small class="d-block text-secondary">{{ employee.email }}</small></td>
+            <td>{{ employee.designation }}</td>
+            <td>{{ employee.department.name }}</td>
+            <td>{{ employee.joining_date.strftime("%Y-%m-%d") }}</td>
+            <td><span class="verification-status status-{{ employee.status }}">{{ employee.status|title }}</span></td>
+            <td>
+              <div class="employee-actions">
+                <a class="btn btn-primary btn-sm" href="{{ url_for('employees.personal_data', employee_id=employee.id) }}">
+                  <i class="bi bi-person-vcard me-1"></i>View Personal Data
+                </a>
+                <a class="btn btn-outline-secondary btn-sm" href="{{ url_for('employees.show', employee_id=employee.id) }}">Profile</a>
+              </div>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7" class="verification-empty">No employees found.</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if pagination.pages > 1 %}
+    <div class="verification-table-footer">
+      <span>Showing {{ pagination.first or 0 }}–{{ pagination.last or 0 }} of {{ pagination.total }} records</span>
+      <nav aria-label="Employee pages">
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item {% if not pagination.has_prev %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('employees.personal_data_list', page=pagination.prev_num, q=search, department_id=department_filter) }}" aria-label="Previous page"><i class="bi bi-chevron-left"></i></a>
+          </li>
+          <li class="page-item active"><span class="page-link">{{ pagination.page }}</span></li>
+          <li class="page-item {% if not pagination.has_next %}disabled{% endif %}">
+            <a class="page-link" href="{{ url_for('employees.personal_data_list', page=pagination.next_num, q=search, department_id=department_filter) }}" aria-label="Next page"><i class="bi bi-chevron-right"></i></a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
+{% block app_scripts %}{% endblock %}

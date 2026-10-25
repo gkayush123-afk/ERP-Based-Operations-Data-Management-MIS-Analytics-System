@@ -1,0 +1,21 @@
+-- Add personal data fields to employees table
+ALTER TABLE employees
+  ADD COLUMN date_of_birth DATE NULL AFTER email,
+  ADD COLUMN gender VARCHAR(20) NULL AFTER date_of_birth,
+  ADD COLUMN address TEXT NULL AFTER gender,
+  ADD COLUMN emergency_contact_name VARCHAR(160) NULL AFTER address,
+  ADD COLUMN emergency_contact_phone VARCHAR(30) NULL AFTER emergency_contact_name,
+  ADD COLUMN emergency_contact_relationship VARCHAR(50) NULL AFTER emergency_contact_phone,
+  ADD COLUMN photo_url VARCHAR(500) NULL AFTER emergency_contact_relationship,
+  ADD COLUMN blood_group VARCHAR(10) NULL AFTER photo_url,
+  ADD COLUMN marital_status VARCHAR(20) NULL AFTER blood_group,
+  ADD COLUMN nationality VARCHAR(80) NULL AFTER marital_status,
+  ADD COLUMN id_number VARCHAR(60) NULL AFTER nationality,
+  ADD COLUMN bank_account_number VARCHAR(60) NULL AFTER id_number,
+  ADD COLUMN bank_name VARCHAR(120) NULL AFTER bank_account_number,
+  ADD COLUMN bank_ifsc VARCHAR(20) NULL AFTER bank_name,
+  ADD COLUMN pan_number VARCHAR(20) NULL AFTER bank_ifsc,
+  ADD COLUMN aadhar_number VARCHAR(20) NULL AFTER pan_number,
+  ADD COLUMN pf_number VARCHAR(40) NULL AFTER aadhar_number,
+  ADD COLUMN uan_number VARCHAR(40) NULL AFTER pf_number,
+  ADD COLUMN esi_number VARCHAR(40) NULL AFTER uan_number;
