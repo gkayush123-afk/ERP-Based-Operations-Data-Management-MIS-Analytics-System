@@ -8,3 +8,7 @@ instance/
 
 mysql_local_data/
 .vscode/
+
+# Temp files
+cookies*.txt
+*.log
