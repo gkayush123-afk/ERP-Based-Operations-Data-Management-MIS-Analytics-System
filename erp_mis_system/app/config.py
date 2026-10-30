@@ -32,7 +32,12 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
     # Plain string (not a @property) so Flask stores a real URL string that
     # Flask-SQLAlchemy can consume; tests override this with their own SQLite.
-    SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL") or _sqlite_fallback_uri()
+    _database_url = os.getenv("DATABASE_URL") or _sqlite_fallback_uri()
+    if _database_url.startswith("postgres://"):
+        _database_url = _database_url.replace("postgres://", "postgresql://", 1)
+    if _database_url.startswith("postgresql://") and "+psycopg" not in _database_url:
+        _database_url = _database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+    SQLALCHEMY_DATABASE_URI = _database_url
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = _engine_options()
     WTF_CSRF_TIME_LIMIT = 3600

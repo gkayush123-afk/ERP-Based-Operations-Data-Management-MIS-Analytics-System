@@ -165,3 +165,17 @@ On Windows, first decompress the selected `.sql.gz` file to a protected temporar
 - [ ] Logs, disk, database availability, backup result, TLS expiry, and service health have alerting/ownership.
 - [ ] Test suite passes against the release; smoke-test login, approval, scoped role access, attendance, reports, exports, and audit.
 - [ ] Company owner accepts the user manual, support contacts, data retention, privacy, and incident response responsibilities.
+
+## 8. Render Managed PostgreSQL (migration target)
+
+The production database target for the Railway MySQL -> Render Managed PostgreSQL migration is Render Managed PostgreSQL.
+
+- Provision a Render PostgreSQL instance in the same region as the Render web service.
+- Set the web service environment variable to the Render internal database URL:
+  `DATABASE_URL=<RENDER_INTERNAL_DATABASE_URL>`
+- The application resolves `SQLALCHEMY_DATABASE_URI` from `DATABASE_URL` (plain string; `postgres://` is normalized to `postgresql+psycopg://`) and installs `psycopg[binary]` as the PostgreSQL driver in place of PyMySQL.
+- Keep `ALLOW_SQLITE_FALLBACK=false` in production so database configuration failures are not hidden by a local SQLite database.
+- Render build command: `pip install -r requirements.txt`. Render start command: `gunicorn wsgi:app --workers 3 --bind 0.0.0.0:10000 --access-logfile - --error-logfile -` (or your configured service command).
+- Database initialization: `wsgi.py` does not create the production schema automatically; run schema setup/migrations against the Render PostgreSQL before release.
+- Migration helper: `scripts/mysql_to_postgresql_migration.sh`; keep Railway MySQL backup until the PostgreSQL migration is verified.
+- PostgreSQL connection settings: SQLAlchemy engine uses `pool_pre_ping=True`, `pool_recycle=3600`, and pool size/overflow for PostgreSQL; SSL (`sslmode=require`) applies to managed-database connections.
