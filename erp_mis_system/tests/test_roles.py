@@ -123,6 +123,8 @@ def test_dashboard_menu_is_role_aware(client, app, role_accounts):
     login_as(client, app, role_accounts["data_entry"])
     data_entry_page = client.get("/dashboard")
     assert b"Department data" in data_entry_page.data
-    assert b"Reports" not in data_entry_page.data
+    # Data-entry must not get the Reports navigation; target the nav label so
+    # the decorative sidebar note copy is not matched by the substring check.
+    assert b"MIS Reports" not in data_entry_page.data
     assert b"Reports &amp; exports" not in data_entry_page.data
     assert b"Audit logs" not in data_entry_page.data

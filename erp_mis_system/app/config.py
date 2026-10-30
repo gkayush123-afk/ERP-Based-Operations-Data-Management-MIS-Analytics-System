@@ -55,7 +55,11 @@ class Config:
     DEBUG = False
     ALLOW_DEBUG = False
     SECRET_KEY = os.getenv("SECRET_KEY")
-    SQLALCHEMY_DATABASE_URI = _resolve_database_uri()
+    @property
+    def SQLALCHEMY_DATABASE_URI(self) -> str:
+        # Resolved lazily so tests (which supply their own SQLite config) do
+        # not attempt a live connection against DATABASE_URL at import time.
+        return _resolve_database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     SQLALCHEMY_ENGINE_OPTIONS = _engine_options()
     WTF_CSRF_TIME_LIMIT = 3600

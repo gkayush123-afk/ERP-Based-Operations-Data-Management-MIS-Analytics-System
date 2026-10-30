@@ -291,7 +291,9 @@ def test_manager_department_scoping_and_employee_department_filter(client, app):
     assert client.get(f"/employees/?department_id={second_department_id}").status_code == 403
     departments_response = client.get("/departments/")
     assert b"General" in departments_response.data
-    assert b"Operations" not in departments_response.data
+    # Match the rendered department row markup so the app brand copy
+    # ("Operations Data Management") is not treated as a department listing.
+    assert b"<strong>Operations</strong>" not in departments_response.data
 
 
 def test_manager_and_data_entry_cannot_delete_employees(client, app):

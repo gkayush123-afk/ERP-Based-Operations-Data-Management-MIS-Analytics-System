@@ -50,6 +50,18 @@ IMPORT_COLUMNS = (
     "uan_number",
     "esi_number",
 )
+# Personal-data columns are optional: older workbooks and manual imports may
+# not carry them, while the core columns drive mandatory row-level validation.
+REQUIRED_IMPORT_COLUMNS = (
+    "employee_code",
+    "full_name",
+    "email",
+    "phone",
+    "designation",
+    "department",
+    "joining_date",
+    "status",
+)
 SORT_COLUMNS = {
     "employee_code": Employee.employee_code,
     "full_name": Employee.full_name,
@@ -464,7 +476,7 @@ def import_excel():
             rows = sheet.iter_rows(values_only=True)
             header_row = next(rows, None)
             headers = [str(value or "").strip().lower() for value in (header_row or ())]
-            missing = [column for column in IMPORT_COLUMNS if column not in headers]
+            missing = [column for column in REQUIRED_IMPORT_COLUMNS if column not in headers]
             if missing:
                 workbook.close()
                 flash(f"Missing required column(s): {', '.join(missing)}.", "danger")
@@ -473,7 +485,7 @@ def import_excel():
             flash("The uploaded workbook could not be read. Please select a valid .xlsx file.", "danger")
             return render_template("employees/import.html", row_results=row_results, departments=departments, active_nav="employees")
 
-        column_index = {name: headers.index(name) for name in IMPORT_COLUMNS}
+        column_index = {name: headers.index(name) for name in IMPORT_COLUMNS if name in headers}
         seen_codes = set()
         for row_number, values in enumerate(rows, start=2):
             if not values or not any(value not in (None, "") for value in values):

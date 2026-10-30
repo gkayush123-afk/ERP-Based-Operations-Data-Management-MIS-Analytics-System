@@ -79,7 +79,7 @@ def test_report_detects_missing_duplicate_email_future_and_missing_attendance(ap
         report = build_data_quality_report(
             db.session,
             start_date=today,
-            end_date=today,
+            end_date=tomorrow,
             department_id=1,
             today=today,
         )
